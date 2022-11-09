@@ -31,7 +31,7 @@ func NewHandlers(r *Repository) {
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	remoteIP := r.RemoteAddr
 	m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
-	render.RenderTemplate(w, "home.page.gohtml", &models.TemplateData{})
+	render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // AboutHandler handles /about requests
@@ -41,7 +41,18 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 
 	stringMap["test"] = "Hello from backend!"
 	stringMap["remote_ip"] = remoteIP
-	render.RenderTemplate(w, "about.page.gohtml", &models.TemplateData{
+	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
 		StringMap: stringMap,
 	})
+}
+
+func (m *Repository) AboutPost(w http.ResponseWriter, r *http.Request) {
+	userMap := make(map[string]string)
+	userMap["user"] = r.Form.Get("username")
+	userMap["password"] = r.Form.Get("password")
+
+	render.RenderTemplate(w, r, "success-signup.page.gohtml", &models.TemplateData{
+		StringMap: userMap,
+	})
+
 }

@@ -2,22 +2,13 @@
 
 {{define "content"}}
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <h1>About Page</h1>
-            <h1>This came from the template:{{index .StringMap "test"}}</h1>
+    <div>
+        <form method="POST" action="/about">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+            <label>USERNAME: </label><input name="username" type="text" value=""/><br><br>
+            <label>PASSWORD: </label><input name="password" type="text" value=""/><br><br>
 
-            <p>
-                {{if ne (index .StringMap "remote_ip") ""}}
-                    Your IP address is: {{index .StringMap "remote_ip"}}
-                {{else}}
-                    IP address of visitor not known. Please visit <a href = "/">Home Page</a>
-                {{end}}
-            </p>
-        </div>
-
+            <input type = "submit" style="color:red" value = "Sign Up!"/>
+        </form>
     </div>
-</div>
-
 {{end}}
