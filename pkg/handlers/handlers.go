@@ -6,6 +6,8 @@ import (
 
 	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/render"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Repository is the prototype of repository type
@@ -46,13 +48,29 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+//func OpenDB() *sql.DB {
+//	db, err := sql.Open("mysql", "root:nyc595486672@tcp(127.0.0.1:3306)/dates")
+//
+//	if err != nil {
+//		log.Fatal(err.Error())
+//	}
+//	return db
+//}
+
 func (m *Repository) AboutPost(w http.ResponseWriter, r *http.Request) {
-	userMap := make(map[string]string)
-	userMap["user"] = r.Form.Get("username")
-	userMap["password"] = r.Form.Get("password")
+
+	//userMap := make(map[string]string)
+	//userMap["user"] = r.Form.Get("username")
+	//userMap["password"] = r.Form.Get("password")
+	calorieStats := map[string]int{
+		"breakfast": 200,
+		"lunch":     500,
+		"dinner":    600,
+		"snacks":    200,
+	}
 
 	render.RenderTemplate(w, r, "success-signup.page.gohtml", &models.TemplateData{
-		StringMap: userMap,
+		IntMap: calorieStats,
 	})
 
 }
