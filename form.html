@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <form action="form.html" method="post">
+      <div class="form-row">
+        <div class="col">
+          <div class="form-group">
+            <label for="desired_date" class="form-label">Enter Date</label>
+            <input type="date" class="form-control"  id="desired_date" name="desired_date" aria-describedby="dateHelp">
+            <div id="dateHelp" class="form-text">Enter date</div>
+          </div>
+        </div>
+    <div class="col">
+      <div class="form-group">
+        <label for="calories" class="form-label">Enter Calories</label>
+        <input type="number" min="1" step="1" class="form-control" id="calories">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label for="protein" class="form-label">Enter Protein</label>
+        <input type="number" min="1" step="1"  class="form-control" id="protein">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label for="carbs" class="form-label">Enter Carbs</label>
+        <input type="number" min="1" step="1"  class="form-control" id="carbs">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label for="fats" class="form-label">Enter Fat</label>
+        <input type="number" min="1" step="1"  class="form-control" id="fats">
+      </div>
+    </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    </div>
+    <script>
+        (() => {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})() 
+    </script>
+</body>
+</html>
