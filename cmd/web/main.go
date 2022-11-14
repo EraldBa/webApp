@@ -26,7 +26,7 @@ func main() {
 	// Setting session lifetime
 	app.Session.Lifetime = 1 * time.Hour
 	// Session ends when user closes browser, by setting Cookie.Persist to false
-	app.Session.Cookie.Persist = false
+	app.Session.Cookie.Persist = true
 	//
 	app.Session.Cookie.SameSite = http.SameSiteLaxMode
 	// Set to true if using https and need to encrypt cookies sent, for
