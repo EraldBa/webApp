@@ -1,0 +1,60 @@
+{{template "base" .}}
+
+{{define "css"}}
+    <title>DashBoard</title>
+    <link rel="stylesheet" href="css/notie.min.css">
+    <style>
+        .btn-warning{
+            color:blueviolet;
+        }
+        body.swal2-shown > [aria-hidden="true"] {
+            transition: 0.1s filter;
+            filter: blur(10px);
+        }
+    </style>
+{{end}}
+
+{{define "content"}}
+    <div class="row">
+        <div class="col">
+            <a class="btn btn-success" id="myButton">Select Desired Date</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <a class="btn btn-warning"  id="update">Update Your Stats</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 class="text-center mt-4">
+                    See Your Stats!
+                </h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div style="width: 400px;">
+                    <canvas id="calories"></canvas>
+                </div>
+            </div>
+            <div class="col">
+                <div style="width: 500px;">
+                    <canvas id="macros"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script src="/static/js/notie.min.js"></script>
+    <script src="/static/js/chart.js"></script>
+    <script src="/static/js/sweetalert2@11.js"></script>
+    <script src="/static/js/myjs.js" ></script>
+{{end}}
