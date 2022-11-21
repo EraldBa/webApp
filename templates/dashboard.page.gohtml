@@ -2,7 +2,7 @@
 
 {{define "css"}}
     <title>DashBoard</title>
-    <link rel="stylesheet" href="css/notie.min.css">
+    <link rel="stylesheet" href="/static/css/notie.min.css">
     <style>
         .btn-warning{
             color:blueviolet;
@@ -15,17 +15,11 @@
 {{end}}
 
 {{define "content"}}
-    <div class="row">
-        <div class="col">
-            <a class="btn btn-success" id="myButton">Select Desired Date</a>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col">
-            <a class="btn btn-warning"  id="update">Update Your Stats</a>
-        </div>
-    </div>
+    <form class="container-fluid justify-content-start">
+        <button class="btn btn-outline-primary" type="button" id="myButton">Select Date</button>
+        <button class="btn btn-outline-success" type="button" id="update">Update Stats</button>
+    </form>
 
     <div class="container">
         <div class="row">
@@ -33,6 +27,9 @@
                 <h1 class="text-center mt-4">
                     See Your Stats!
                 </h1>
+                <h2 class="text-center mt-2" id="current_date"></h2>
+                <h3 class="text-center">Today's Total: </h3>
+                <h3 class="text-center" id="today_total"></h3>
             </div>
         </div>
 
@@ -47,6 +44,11 @@
                     <canvas id="macros"></canvas>
                 </div>
             </div>
+            <div class="col">
+                <div style="width: 400px;">
+                    <canvas id="cal"></canvas>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -56,5 +58,213 @@
     <script src="/static/js/notie.min.js"></script>
     <script src="/static/js/chart.js"></script>
     <script src="/static/js/sweetalert2@11.js"></script>
-    <script src="/static/js/myjs.js" ></script>
+    <script>
+        let current_date = new Date()
+        let dd = String(current_date.getDate()).padStart(2, '0');
+        let mm = String(current_date.getMonth() + 1).padStart(2, '0');
+        let yyyy = current_date.getFullYear();
+        current_date = yyyy+"-"+mm+"-"+dd;
+        document.getElementById('current_date').innerHTML = current_date;
+
+        let breakfast = parseInt({{index .StringMap "breakfast"}});
+        let lunch = parseInt({{index .StringMap "lunch"}});
+        let dinner = parseInt({{index .StringMap "dinner"}});
+        let snacks = parseInt({{index .StringMap "snacks"}});
+        let protein = parseInt({{index .StringMap "protein"}})
+        let carbs = parseInt({{index .StringMap "carbs"}})
+        let fats = parseInt({{index .StringMap "fats"}})
+        let total_cal = breakfast + lunch + dinner + snacks;
+        document.getElementById('today_total').innerHTML = total_cal.toString();
+
+        const csrf_token = "{{.CSRFToken}}"
+        const ctx = document.getElementById('calories');
+        const ctz = document.getElementById('macros');
+        const crx = document.getElementById('cal');
+
+        function real_time_update(result){
+
+            if (current_date === result[0]) {
+                let cals = parseInt(result[2])
+                switch (result[1]) {
+                    case "breakfast":
+                        calChart.data.datasets[0].data[0] += cals
+                        break;
+                    case "lunch":
+                        calChart.data.datasets[0].data[1] += cals
+                        break;
+                    case "dinner":
+                        calChart.data.datasets[0].data[2] += cals
+                        break;
+                    case "snacks":
+                        calChart.data.datasets[0].data[3] += cals
+                        break;
+                }
+                total_cal += cals;
+                document.getElementById('today_total').innerHTML = total_cal.toString();
+
+                macroChart.data.datasets[0].data[0] += parseInt(result[3])
+                macroChart.data.datasets[0].data[1] += parseInt(result[4])
+                macroChart.data.datasets[0].data[2] += parseInt(result[5])
+
+                macroChart.update();
+                calChart.update();
+            }
+        }
+
+
+
+        let attention = Prompt();
+        document.getElementById("update").addEventListener("click", function(){
+            let html = `
+            <form id="stats-update" action="/dashboard" method="post" style="width: 450px; display: inline-block;">
+                  <div class="form-row">
+                    <div class="col">
+                      <div class="form-group mt-4">
+                        <label for="desired_date" class="form-label">Enter Date</label>
+                        <input required type="date" class="form-control"  id="desired_date" name="desired_date" aria-describedby="dateHelp">
+                        <div id="dateHelp" class="form-text">Enter date</div>
+                      </div>
+                    <div>
+                    <div class="col">
+                      <select class="form-select" id="time_of_day" name="time_of_day">
+                        <option selected value="">Choose Time Of Day</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snacks">Snacks</option>
+                      </select>
+                    </div>
+                <div class="row">
+                <div class="col">
+                  <div class="form-group">
+                    <label for="calories" class="form-label">Enter Calories</label>
+                    <input value = "0" type="number" class="form-control" id="calorie" name="calorie">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-group">
+                    <label for="protein" class="form-label">Enter Protein</label>
+                    <input value = "0" type="number" class="form-control" id="protein" name="protein">
+                  </div>
+                </div>
+                </div>
+                <div class="row">
+                <div class="col">
+                <div class="form-group">
+                    <label for="carbs" class="form-label">Enter Carbs</label>
+                    <input value = "0" type="number" class="form-control" id="carbs" name="carbs">
+                 </div>
+                </div>
+                <div class="col">
+                <div class="form-group">
+                    <label for="fats" class="form-label">Enter Fat</label>
+                    <input value = "0" type="number" class="form-control" id="fats" name="fats">
+                </div>
+                </div>
+                </div>
+                <hr>
+                </div>
+                </form>
+            `
+            attention.custom({
+                msg:html,
+                title:"Enter Values",
+                callback: function (result){
+                    real_time_update(result)
+
+                    let form = document.getElementById("stats-update")
+                    let formData = new FormData(form);
+                    formData.append("csrf_token", csrf_token);
+
+                    fetch ("/dashboard",
+                        {
+                            method: "post",
+                            body: formData,
+                        })
+                }
+            })
+        })
+
+        document.getElementById("myButton").addEventListener("click", function(){
+            displayCalendar()
+        })
+
+
+        let calChart = new Chart(ctx, {
+            type: 'doughnut',
+            data:{
+                labels: [
+                    'Breakfast',
+                    'Lunch',
+                    'Dinner',
+                    'Snacks'
+                ],
+                datasets: [{
+                    label: 'Calories',
+                    data: [breakfast, lunch, dinner, snacks],
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(0, 255, 0)'
+                    ],
+                    hoverOffset: 4,
+                }]
+            }
+        });
+        let macroChart = new Chart(ctz, {
+            type: 'bar',
+            data:{
+                labels: [
+                    'Protein',
+                    'Carbs',
+                    'Fat',
+                ],
+                datasets: [{
+                    label: 'Macros',
+                    data: [protein, carbs, fats],
+                    backgroundColor: [
+                        'rgb(0, 255, 0)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 99, 132)',
+                    ],
+                    hoverOffset: 4,
+
+                }],
+
+            },
+            options:{
+                indexAxis: 'y',
+            }
+        });
+
+        function displayCalendar(){
+            let myDate = new Date()
+            notie.date({
+                value: myDate,
+                submitCallback: function (date) {
+                    let dd = String(date.getDate()).padStart(2, '0');
+                    let mm = String(date.getMonth() + 1).padStart(2, '0');
+                    let yyyy = date.getFullYear();
+                    current_date = yyyy+"-"+mm+"-"+dd;
+                    document.getElementById('current_date').innerHTML = current_date;
+                    let dateJSON = {
+                        "date": current_date,
+                        "csrf_token": csrf_token,
+                    }
+
+                    fetch ("/dashboard-new",{
+                        method: "post",
+                        body: JSON.stringify(dateJSON),
+                    })
+                        .then(response => response.json())
+                        .then(data => console.log(data))
+                    notie.alert({ type: 1, text: 'You selected: ' + date })
+
+                }
+            })
+        }
+
+
+    </script>
 {{end}}

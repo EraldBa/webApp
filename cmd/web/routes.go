@@ -17,9 +17,12 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Get("/", handlers.Repo.HomeHandler)
 	mux.Get("/about", handlers.Repo.AboutHandler)
-	mux.Post("/about", handlers.Repo.AboutPost)
-	mux.Get("/update-calories", handlers.Repo.UpdateCalHandler)
-	mux.Post("/show-stats", handlers.Repo.PostUpdateCalHandler)
+	mux.Get("/dashboard", handlers.Repo.DashboardHandler)
+	mux.Post("/dashboard", handlers.Repo.PostDashboardHandler)
+	mux.Post("/dashboard-new", handlers.Repo.PostDashNewHandler)
+	mux.Get("/member", handlers.Repo.MemberHandler)
+	mux.Post("/signed-up", handlers.Repo.PostSignUpHandler)
+	mux.Post("/logged-in", handlers.Repo.PostLogInHandler)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))

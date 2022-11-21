@@ -15,6 +15,8 @@ func NoSurf(next http.Handler) http.Handler {
 		Secure:   app.InProduction,
 		SameSite: http.SameSiteLaxMode,
 	})
+
+	csrfHandler.ExemptPath("/dashboard-new")
 	return csrfHandler
 }
 

@@ -16,7 +16,6 @@ var app config.AppConfig
 
 func main() {
 	// Creating app config in main
-
 	var err error
 	// Set to true if in production, for now it's false
 	app.InProduction = false

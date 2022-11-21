@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/EraldBa/webApp/pkg/models"
+	"github.com/justinas/nosurf"
+	"log"
 	"net/http"
 
 	"github.com/EraldBa/webApp/pkg/config"
@@ -57,31 +61,66 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 //	return db
 //}
 
-func (m *Repository) UpdateCalHandler(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "update-cal.page.gohtml", &models.TemplateData{})
-}
-
-func (m *Repository) PostUpdateCalHandler(w http.ResponseWriter, r *http.Request) {
-	calStats := map[string]string{
-		"breakfast": r.Form.Get("breakfast"),
-		"lunch":     r.Form.Get("lunch"),
-		"dinner":    r.Form.Get("dinner"),
-		"snacks":    r.Form.Get("snacks"),
+func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	stringMap := map[string]string{
+		"breakfast": "100",
+		"lunch":     "100",
+		"dinner":    "100",
+		"snacks":    "100",
+		"protein":   "200",
+		"carbs":     "400",
+		"fats":      "100",
 	}
-
-	render.RenderTemplate(w, r, "show-stats.page.gohtml", &models.TemplateData{
-		StringMap: calStats,
+	render.RenderTemplate(w, r, "dashboard.page.gohtml", &models.TemplateData{
+		StringMap: stringMap,
 	})
 }
 
-func (m *Repository) AboutPost(w http.ResponseWriter, r *http.Request) {
+func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
 
-	userMap := make(map[string]string)
-	userMap["user"] = r.Form.Get("username")
-	userMap["password"] = r.Form.Get("password")
+	stringMap := map[string]string{
+		"time_of_day":  r.Form.Get("time_of_day"),
+		"desired_date": r.Form.Get("desired_date"),
+		"breakfast":    r.Form.Get("calorie"),
+		"lunch":        r.Form.Get("protein"),
+		"dinner":       r.Form.Get("carbs"),
+		"snacks":       r.Form.Get("fats"),
+	}
+	log.Println(stringMap)
+}
 
-	render.RenderTemplate(w, r, "success-signup.page.gohtml", &models.TemplateData{
-		StringMap: userMap,
+type dateJSON struct {
+	Date      string `json:"date"`
+	CSRFToken string `json:"csrf_token"`
+}
+
+func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) {
+	var p dateJSON
+
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		log.Fatal(err)
+	}
+	if !nosurf.VerifyToken(nosurf.Token(r), p.CSRFToken) {
+		_, _ = fmt.Fprintf(w, "Access Denied")
+	}
+	a, _ := json.Marshal(p)
+
+	if p.Date == "2022-11-19" {
+		_, _ = w.Write(a)
+	}
+}
+
+func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
+		Error: "Failed Log In Attempt!",
 	})
+}
 
+func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+
+}
+
+func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }

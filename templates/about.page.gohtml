@@ -1,14 +1,15 @@
 {{template "base" .}}
 
+{{define "css"}}
+<style>
+    .left {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    }
+</style>
+{{end}}
+
 {{define "content"}}
-
-    <div>
-        <form method="POST" action="/about">
-            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-            <label>USERNAME: </label><input name="username" type="text" value=""/><br><br>
-            <label>PASSWORD: </label><input name="password" type="text" value=""/><br><br>
-
-            <input type = "submit" style="color:red" value = "Sign Up!"/>
-        </form>
-    </div>
+     <img src="/static/images/gopher-hello.gif" class="left">
 {{end}}
