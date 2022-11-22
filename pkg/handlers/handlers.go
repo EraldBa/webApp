@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/EraldBa/webApp/pkg/models"
 	"github.com/justinas/nosurf"
 	"log"
@@ -89,24 +88,43 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 	log.Println(stringMap)
 }
 
-type dateJSON struct {
+type dateRecievedJSON struct {
 	Date      string `json:"date"`
 	CSRFToken string `json:"csrf_token"`
 }
+type dateResponseJSON struct {
+	Breakfast int `json:"breakfast"`
+	Lunch     int `json:"lunch"`
+	Dinner    int `json:"dinner"`
+	Snacks    int `json:"snacks"`
+	Protein   int `json:"protein"`
+	Carbs     int `json:"carbs"`
+	Fats      int `json:"fats"`
+}
 
 func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) {
-	var p dateJSON
+	var p dateRecievedJSON
 
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 		log.Fatal(err)
 	}
 	if !nosurf.VerifyToken(nosurf.Token(r), p.CSRFToken) {
-		_, _ = fmt.Fprintf(w, "Access Denied")
+		_, _ = w.Write([]byte("Error 400. Server refused Connection"))
+		return
 	}
-	a, _ := json.Marshal(p)
 
 	if p.Date == "2022-11-19" {
-		_, _ = w.Write(a)
+		a := dateResponseJSON{
+			Breakfast: 400,
+			Lunch:     500,
+			Dinner:    600,
+			Snacks:    200,
+			Protein:   180,
+			Carbs:     360,
+			Fats:      80,
+		}
+		b, _ := json.Marshal(a)
+		_, _ = w.Write(b)
 	}
 }
 

@@ -4,9 +4,6 @@
     <title>DashBoard</title>
     <link rel="stylesheet" href="/static/css/notie.min.css">
     <style>
-        .btn-warning{
-            color:blueviolet;
-        }
         body.swal2-shown > [aria-hidden="true"] {
             transition: 0.1s filter;
             filter: blur(10px);
@@ -59,55 +56,95 @@
     <script src="/static/js/chart.js"></script>
     <script src="/static/js/sweetalert2@11.js"></script>
     <script>
-        let current_date = new Date()
+        let current_date = new Date();
         let dd = String(current_date.getDate()).padStart(2, '0');
         let mm = String(current_date.getMonth() + 1).padStart(2, '0');
         let yyyy = current_date.getFullYear();
         current_date = yyyy+"-"+mm+"-"+dd;
         document.getElementById('current_date').innerHTML = current_date;
 
-        let breakfast = parseInt({{index .StringMap "breakfast"}});
-        let lunch = parseInt({{index .StringMap "lunch"}});
-        let dinner = parseInt({{index .StringMap "dinner"}});
-        let snacks = parseInt({{index .StringMap "snacks"}});
-        let protein = parseInt({{index .StringMap "protein"}})
-        let carbs = parseInt({{index .StringMap "carbs"}})
-        let fats = parseInt({{index .StringMap "fats"}})
-        let total_cal = breakfast + lunch + dinner + snacks;
+
+        let stat_cache = new Map([
+            [current_date, {
+                breakfast: parseInt({{index .StringMap "breakfast"}}),
+                lunch: parseInt({{index .StringMap "lunch"}}),
+                dinner: parseInt({{index .StringMap "dinner"}}),
+                snacks: parseInt({{index .StringMap "snacks"}}),
+                protein: parseInt({{index .StringMap "protein"}}),
+                carbs: parseInt({{index .StringMap "carbs"}}),
+                fats: parseInt({{index .StringMap "fats"}}),
+            }]
+        ]);
+
+        let total_cal = stat_cache.get(current_date).breakfast + stat_cache.get(current_date).lunch + stat_cache.get(current_date).dinner + stat_cache.get(current_date).snacks;
         document.getElementById('today_total').innerHTML = total_cal.toString();
 
-        const csrf_token = "{{.CSRFToken}}"
+        const csrf_token = "{{.CSRFToken}}";
         const ctx = document.getElementById('calories');
         const ctz = document.getElementById('macros');
         const crx = document.getElementById('cal');
 
+
+        function update_stats(desired_stats){
+
+            calChart.data.datasets[0].data[0] = desired_stats.breakfast;
+            calChart.data.datasets[0].data[1] = desired_stats.lunch;
+            calChart.data.datasets[0].data[2] = desired_stats.dinner;
+            calChart.data.datasets[0].data[3] = desired_stats.snacks;
+
+            total_cal = desired_stats.breakfast + desired_stats.lunch + desired_stats.dinner + desired_stats.snacks;
+
+            macroChart.data.datasets[0].data[0] = desired_stats.protein;
+            macroChart.data.datasets[0].data[1] = desired_stats.carbs;
+            macroChart.data.datasets[0].data[2] = desired_stats.fats;
+
+            document.getElementById('today_total').innerHTML = total_cal.toString();
+
+            macroChart.update();
+            calChart.update();
+        }
+
+
         function real_time_update(result){
+            let given_cals = parseInt(result[2]);
+            let given_protein = parseInt(result[3]);
+            let given_carbs = parseInt(result[4]);
+            let given_fats = parseInt(result[5]);
+            let given_date = result[0];
 
-            if (current_date === result[0]) {
-                let cals = parseInt(result[2])
-                switch (result[1]) {
-                    case "breakfast":
-                        calChart.data.datasets[0].data[0] += cals
-                        break;
-                    case "lunch":
-                        calChart.data.datasets[0].data[1] += cals
-                        break;
-                    case "dinner":
-                        calChart.data.datasets[0].data[2] += cals
-                        break;
-                    case "snacks":
-                        calChart.data.datasets[0].data[3] += cals
-                        break;
-                }
-                total_cal += cals;
-                document.getElementById('today_total').innerHTML = total_cal.toString();
+            if (stat_cache.has(given_date)){
+                let stats = stat_cache.get(given_date);
+                stats[result[1]] += given_cals;
+                stats.protein += given_protein;
+                stats.carbs += given_carbs;
+                stats.fats += given_fats;
+            }
 
-                macroChart.data.datasets[0].data[0] += parseInt(result[3])
-                macroChart.data.datasets[0].data[1] += parseInt(result[4])
-                macroChart.data.datasets[0].data[2] += parseInt(result[5])
-
-                macroChart.update();
-                calChart.update();
+            if (current_date === given_date) {
+                update_stats(stat_cache.get(current_date));
+                // switch (result[1]) {
+                //     case "breakfast":
+                //         calChart.data.datasets[0].data[0] += given_cals;
+                //         break;
+                //     case "lunch":
+                //         calChart.data.datasets[0].data[1] += given_cals;
+                //         break;
+                //     case "dinner":
+                //         calChart.data.datasets[0].data[2] += given_cals;
+                //         break;
+                //     case "snacks":
+                //         calChart.data.datasets[0].data[3] += given_cals;
+                //         break;
+                // }
+                // total_cal += given_cals;
+                // document.getElementById('today_total').innerHTML = total_cal.toString();
+                //
+                // macroChart.data.datasets[0].data[0] += given_protein;
+                // macroChart.data.datasets[0].data[1] += given_carbs;
+                // macroChart.data.datasets[0].data[2] += given_fats;
+                //
+                // macroChart.update();
+                // calChart.update();
             }
         }
 
@@ -180,7 +217,7 @@
                         {
                             method: "post",
                             body: formData,
-                        })
+                        });
                 }
             })
         })
@@ -188,7 +225,6 @@
         document.getElementById("myButton").addEventListener("click", function(){
             displayCalendar()
         })
-
 
         let calChart = new Chart(ctx, {
             type: 'doughnut',
@@ -201,7 +237,10 @@
                 ],
                 datasets: [{
                     label: 'Calories',
-                    data: [breakfast, lunch, dinner, snacks],
+                    data: [stat_cache.get(current_date).breakfast,
+                        stat_cache.get(current_date).lunch,
+                        stat_cache.get(current_date).dinner,
+                        stat_cache.get(current_date).snacks],
                     backgroundColor: [
                         'rgb(255, 99, 132)',
                         'rgb(54, 162, 235)',
@@ -222,7 +261,9 @@
                 ],
                 datasets: [{
                     label: 'Macros',
-                    data: [protein, carbs, fats],
+                    data: [stat_cache.get(current_date).protein,
+                        stat_cache.get(current_date).carbs,
+                        stat_cache.get(current_date).fats],
                     backgroundColor: [
                         'rgb(0, 255, 0)',
                         'rgb(54, 162, 235)',
@@ -242,25 +283,38 @@
             let myDate = new Date()
             notie.date({
                 value: myDate,
-                submitCallback: function (date) {
+                submitCallback: async function (date) {
                     let dd = String(date.getDate()).padStart(2, '0');
                     let mm = String(date.getMonth() + 1).padStart(2, '0');
                     let yyyy = date.getFullYear();
                     current_date = yyyy+"-"+mm+"-"+dd;
                     document.getElementById('current_date').innerHTML = current_date;
-                    let dateJSON = {
-                        "date": current_date,
-                        "csrf_token": csrf_token,
+                    if (stat_cache.has(current_date)){
+                        update_stats(stat_cache.get(current_date));
+                    }else{
+                        let dateJSON = {
+                            "date": current_date,
+                            "csrf_token": csrf_token,
+                        }
+                        await fetch ("/dashboard-new",{
+                            method: "post",
+                            body: JSON.stringify(dateJSON),
+                        })
+                            .then(response => response.json())
+                            .then(data => stat_cache.set(current_date, {
+                                breakfast: data.breakfast,
+                                lunch: data.lunch,
+                                dinner: data.dinner,
+                                snacks: data.snacks,
+                                protein: data.protein,
+                                carbs: data.carbs,
+                                fats: data.fats,
+                            }));
+                        console.log(stat_cache.get(current_date));
+                        update_stats(stat_cache.get(current_date));
                     }
 
-                    fetch ("/dashboard-new",{
-                        method: "post",
-                        body: JSON.stringify(dateJSON),
-                    })
-                        .then(response => response.json())
-                        .then(data => console.log(data))
-                    notie.alert({ type: 1, text: 'You selected: ' + date })
-
+                    notie.alert({ type: 1, text: 'You selected: ' + current_date });
                 }
             })
         }
