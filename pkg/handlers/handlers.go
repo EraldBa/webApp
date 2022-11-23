@@ -142,3 +142,7 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
+
+func (m *Repository) ContactHandler(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, r, "contact.page.gohtml", &models.TemplateData{})
+}
