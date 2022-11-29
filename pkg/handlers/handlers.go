@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/EraldBa/webApp/pkg/forms"
 	"github.com/EraldBa/webApp/pkg/models"
 	"github.com/justinas/nosurf"
 	"log"
@@ -129,12 +130,13 @@ func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
-		Error: "Failed Log In Attempt!",
-	})
+	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
+		Form: forms.New(nil),
+	})
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 
 }
