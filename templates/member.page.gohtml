@@ -7,7 +7,7 @@
 {{end}}
 
 {{define "content"}}
-    <center><div class="container" style="text-align: left">
+    <center><div class="container {{index .Data "active"}}" style="text-align: left">
                 <div class="forms">
                     <div class="form login">
 
@@ -44,7 +44,10 @@
                         <form action="/signed-up" method="post">
                             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                             <div class="input-field">
-                                <input  type="text" name="username" placeholder="Enter your username" required autocomplete="off">
+                                {{with .Form.Errors.Get "username"}}
+                                    <label class="text-danger">{{.}}</label>
+                                {{end}}
+                                <input  type="text" name="username" placeholder="Enter your username" autocomplete="off">
                                 <i class="uil uil-user"></i>
                             </div>
                             <div class="input-field">

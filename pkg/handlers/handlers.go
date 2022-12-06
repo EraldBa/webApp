@@ -52,15 +52,6 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-//func OpenDB() *sql.DB {
-//	db, err := sql.Open("mysql", "root:nyc595486672@tcp(127.0.0.1:3306)/dates")
-//
-//	if err != nil {
-//		log.Fatal(err.Error())
-//	}
-//	return db
-//}
-
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	stringMap := map[string]string{
 		"breakfast": "100",
@@ -78,33 +69,20 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
 
-	stringMap := map[string]string{
-		"time_of_day":  r.Form.Get("time_of_day"),
-		"desired_date": r.Form.Get("desired_date"),
-		"breakfast":    r.Form.Get("calorie"),
-		"lunch":        r.Form.Get("protein"),
-		"dinner":       r.Form.Get("carbs"),
-		"snacks":       r.Form.Get("fats"),
+	stats := models.StatsForm{
+		TimeOfDay: r.Form.Get("time_of_day"),
+		Date:      r.Form.Get("desired_date"),
+		Calories:  r.Form.Get("calorie"),
+		Protein:   r.Form.Get("protein"),
+		Carbs:     r.Form.Get("carbs"),
+		Fats:      r.Form.Get("fats"),
 	}
-	log.Println(stringMap)
-}
 
-type dateRecievedJSON struct {
-	Date      string `json:"date"`
-	CSRFToken string `json:"csrf_token"`
-}
-type dateResponseJSON struct {
-	Breakfast int `json:"breakfast"`
-	Lunch     int `json:"lunch"`
-	Dinner    int `json:"dinner"`
-	Snacks    int `json:"snacks"`
-	Protein   int `json:"protein"`
-	Carbs     int `json:"carbs"`
-	Fats      int `json:"fats"`
+	log.Println(stats)
 }
 
 func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) {
-	var p dateRecievedJSON
+	var p models.GetDate
 
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 		log.Fatal(err)
@@ -115,7 +93,7 @@ func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if p.Date == "2022-11-19" {
-		a := dateResponseJSON{
+		a := models.StatsSend{
 			Breakfast: 400,
 			Lunch:     500,
 			Dinner:    600,
@@ -134,11 +112,24 @@ func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
-		Form: forms.New(nil),
-	})
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-
+	signupData := models.Signup{
+		Username: r.Form.Get("username"),
+		Email:    r.Form.Get("email"),
+		Password: r.Form.Get("password"),
+	}
+	form := forms.New(r.PostForm)
+	form.Has("username", r)
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["active"] = "active"
+		data["stats"] = signupData
+		render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+	} else {
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	}
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
