@@ -1,6 +1,7 @@
 # Fitbuddy 
 Fitbuddy is a calorie and macronutrient tracking website built
 with **HTML**, **CSS**, **JS**, **GO** and **POSTGRESQL**.
+
 ![Image](https://external-preview.redd.it/Cww17TNLCBtzER2ShsUr13ZrWwT3sFP-INtSl70YEDo.jpg?width=640&crop=smart&auto=webp&s=44d34c81b80b6f2c4dda371b3ca20a6cb44d90b3)
 
 **For backend:**
