@@ -1,4 +1,4 @@
-package modelsa
+package models
 
 type Signup struct {
 	Username string

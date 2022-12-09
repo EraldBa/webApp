@@ -10,8 +10,6 @@ import (
 
 	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/render"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 // Repository is the prototype of repository type
@@ -77,7 +75,6 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 		Carbs:     r.Form.Get("carbs"),
 		Fats:      r.Form.Get("fats"),
 	}
-
 	log.Println(stats)
 }
 
