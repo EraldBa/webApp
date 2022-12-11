@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/EraldBa/webApp/pkg/forms"
 	"github.com/EraldBa/webApp/pkg/models"
 	"github.com/justinas/nosurf"
 	"log"
@@ -17,7 +16,7 @@ type Repository struct {
 	App *config.AppConfig
 }
 
-// Repo is the handles repository
+// Repo is the handle's repository
 var Repo *Repository
 
 // NewRepo makes new repo
@@ -33,21 +32,19 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	remoteIP := r.RemoteAddr
-	m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
+	//remoteIP := r.RemoteAddr
+	//m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // AboutHandler handles /about requests
 func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
-	stringMap := make(map[string]string)
-	remoteIP := m.App.Session.GetString(r.Context(), "remote_ip")
-
-	stringMap["test"] = "Hello from backend!"
-	stringMap["remote_ip"] = remoteIP
-	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{
-		StringMap: stringMap,
-	})
+	//stringMap := make(map[string]string)
+	//remoteIP := m.App.Session.GetString(r.Context(), "remote_ip")
+	//
+	//stringMap["test"] = "Hello from backend!"
+	//stringMap["remote_ip"] = remoteIP
+	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -114,23 +111,27 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 		Email:    r.Form.Get("email"),
 		Password: r.Form.Get("password"),
 	}
-	form := forms.New(r.PostForm)
-	form.Has("username", r)
-	if !form.Valid() {
-		data := make(map[string]interface{})
-		data["active"] = "active"
-		data["stats"] = signupData
-		render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
-			Form: form,
-			Data: data,
-		})
-	} else {
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-	}
+	log.Println(signupData)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+
+	loginData := models.Login{
+		Username: r.Form.Get("username"),
+		Password: r.Form.Get("password"),
+	}
+
+	if loginData.Username == "Erald" {
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		return
+	}
+
+	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
+		Error: "Login unsuccessful, check your info and try again",
+	})
+
 }
 
 func (m *Repository) ContactHandler(w http.ResponseWriter, r *http.Request) {
