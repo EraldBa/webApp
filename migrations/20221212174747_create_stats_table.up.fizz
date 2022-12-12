@@ -1,0 +1,12 @@
+create_table("stats") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("date", "datetime", {})
+  t.Column("breakfast", "integer", {})
+  t.Column("lunch", "integer", {})
+  t.Column("dinner", "integer", {})
+  t.Column("snacks", "integer", {})
+  t.Column("protein", "integer", {})
+  t.Column("carbs", "integer", {})
+  t.Column("fats", "integer", {})
+  t.Column("user_id", "integer", {})
+}
