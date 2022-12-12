@@ -41,11 +41,6 @@
                     <canvas id="macros"></canvas>
                 </div>
             </div>
-            <div class="col">
-                <div style="width: 400px;">
-                    <canvas id="cal"></canvas>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -76,14 +71,15 @@
             }]
         ]);
 
-        let total_cal = stat_cache.get(current_date).breakfast + stat_cache.get(current_date).lunch + stat_cache.get(current_date).dinner + stat_cache.get(current_date).snacks;
+        let total_cal = stat_cache.get(current_date).breakfast +
+                        stat_cache.get(current_date).lunch +
+                        stat_cache.get(current_date).dinner +
+                        stat_cache.get(current_date).snacks;
         document.getElementById('today_total').innerHTML = total_cal.toString();
 
         const csrf_token = "{{.CSRFToken}}";
         const ctx = document.getElementById('calories');
         const ctz = document.getElementById('macros');
-        const crx = document.getElementById('cal');
-
 
         function update_stats(desired_stats){
 
@@ -92,7 +88,10 @@
             calChart.data.datasets[0].data[2] = desired_stats.dinner;
             calChart.data.datasets[0].data[3] = desired_stats.snacks;
 
-            total_cal = desired_stats.breakfast + desired_stats.lunch + desired_stats.dinner + desired_stats.snacks;
+            total_cal = desired_stats.breakfast +
+                        desired_stats.lunch +
+                        desired_stats.dinner +
+                        desired_stats.snacks;
 
             macroChart.data.datasets[0].data[0] = desired_stats.protein;
             macroChart.data.datasets[0].data[1] = desired_stats.carbs;

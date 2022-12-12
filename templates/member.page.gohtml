@@ -16,7 +16,7 @@
                         <form action="/logged-in" method="post">
                             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                             <div class="input-field">
-                                <input type="email" name="username" placeholder="Enter your username" required autocomplete="off">
+                                <input type="text" name="username" placeholder="Enter your username" required autocomplete="off">
                                 <i class="uil uil-user"></i>
                             </div>
                             <div class="input-field">
@@ -115,8 +115,9 @@
         login.addEventListener("click", ( )=>{
             container.classList.remove("active");
         });
+
         let failed_attempt = "{{.Error}}";
-        console.log(failed_attempt)
+
         if (failed_attempt !== ""){
             let attention = Prompt();
             attention.toast({icon: "error", msg: failed_attempt});
