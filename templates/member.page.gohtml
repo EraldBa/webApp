@@ -44,9 +44,6 @@
                         <form action="/signed-up" method="post">
                             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                             <div class="input-field">
-                                {{with .Form.Errors.Get "username"}}
-                                    <label class="text-danger">{{.}}</label>
-                                {{end}}
                                 <input  type="text" name="username" placeholder="Enter your username" autocomplete="off">
                                 <i class="uil uil-user"></i>
                             </div>
