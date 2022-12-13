@@ -1,4 +1,4 @@
-add_foreign_key("stats", "user_id", {"rooms", ["id"]}, {
+add_foreign_key("stats", "user_id", {"users": ["id"]}, {
     "on_delete": "cascade",
     "on_update": "cascade",
 })
