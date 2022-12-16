@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/EraldBa/webApp/pkg/config"
+	"github.com/EraldBa/webApp/pkg/driver"
 	"github.com/EraldBa/webApp/pkg/handlers"
 	"github.com/EraldBa/webApp/pkg/render"
 	"github.com/alexedwards/scs/v2"
@@ -10,15 +11,19 @@ import (
 	"time"
 )
 
-const portNumber string = ":8000"
+const (
+	dbInfo     = "host=localhost post=5432 dbname=fitbuddy user= password="
+	portNumber = ":8080"
+)
 
 var app config.AppConfig
 
 func main() {
-	err := run()
+	db, err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.SQL.Close()
 
 	srv := http.Server{
 		Addr:    portNumber,
@@ -32,7 +37,7 @@ func main() {
 
 }
 
-func run() error {
+func run() (*driver.DB, error) {
 	var err error
 	// Set to true if in production, for now it's false
 	app.InProduction = false
@@ -49,17 +54,25 @@ func run() error {
 	// now it's set to false
 	app.Session.Cookie.Secure = app.InProduction
 
+	log.Println("Connecting to database...")
+	db, err := driver.ConnectDB(dbInfo)
+	if err != nil {
+		log.Fatal("Cannot connect to database. Program is exiting...")
+		return nil, err
+	}
+	log.Println("Connected to database!")
+
 	app.TemplateCache, err = render.CreateTemplateCache()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	app.UseCache = false
 
-	repo := handlers.NewRepo(&app)
+	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
 
 	// Passing app config to render package
 	render.NewTemplates(&app)
-	return nil
+	return db, nil
 }

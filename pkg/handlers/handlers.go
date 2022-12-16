@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/EraldBa/webApp/pkg/driver"
 	"github.com/EraldBa/webApp/pkg/models"
+	"github.com/EraldBa/webApp/pkg/repository"
+	"github.com/EraldBa/webApp/pkg/repository/dbrepo"
 	"github.com/justinas/nosurf"
 	"log"
 	"net/http"
@@ -14,15 +17,17 @@ import (
 // Repository is the prototype of repository type
 type Repository struct {
 	App *config.AppConfig
+	DB  repository.DatabaseRepo
 }
 
 // Repo is the handle's repository
 var Repo *Repository
 
 // NewRepo makes new repo
-func NewRepo(a *config.AppConfig) *Repository {
+func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
+		DB:  dbrepo.NewPostgresRepo(db.SQL, a),
 	}
 }
 
