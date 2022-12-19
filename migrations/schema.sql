@@ -38,14 +38,14 @@ ALTER TABLE public.schema_migration OWNER TO erald;
 CREATE TABLE public.stats (
     id integer NOT NULL,
     date timestamp with time zone NOT NULL,
-    breakfast integer NOT NULL,
-    lunch integer NOT NULL,
-    dinner integer NOT NULL,
-    snacks integer NOT NULL,
-    protein integer NOT NULL,
-    carbs integer NOT NULL,
-    fats integer NOT NULL,
-    user_id integer NOT NULL,
+    breakfast real NOT NULL,
+    lunch real NOT NULL,
+    dinner real NOT NULL,
+    snacks real NOT NULL,
+    protein real NOT NULL,
+    carbs real NOT NULL,
+    fats real NOT NULL,
+    user_id real NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -164,14 +164,6 @@ CREATE UNIQUE INDEX schema_migration_version_idx ON public.schema_migration USIN
 --
 
 CREATE UNIQUE INDEX users_email_idx ON public.users USING btree (email);
-
-
---
--- Name: stats stats_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: erald
---
-
-ALTER TABLE ONLY public.stats
-    ADD CONSTRAINT stats_users_id_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

@@ -1,9 +1,15 @@
 package models
 
-type Signup struct {
-	Username string
-	Email    string
-	Password string
+import "time"
+
+type User struct {
+	ID          int
+	Username    string
+	Email       string
+	Password    string
+	AccessLevel int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Login struct {

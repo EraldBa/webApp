@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dsn        = "host=localhost port=5432 dbname=fitbuddy user= password="
+	dsn        = "host=localhost port=5432 dbname=fitbuddy user=erald password=95486672"
 	portNumber = ":8080"
 )
 
@@ -55,11 +55,9 @@ func run() (*driver.DB, error) {
 	app.Session.Cookie.Secure = app.InProduction
 
 	log.Println("Connecting to database...")
-	db, err := driver.ConnectDB(dsn)
-	if err != nil {
-		log.Fatal("Cannot connect to database. Program is exiting...")
-		return nil, err
-	}
+
+	db := driver.ConnectDB(dsn)
+
 	log.Println("Connected to database!")
 
 	app.TemplateCache, err = render.CreateTemplateCache()

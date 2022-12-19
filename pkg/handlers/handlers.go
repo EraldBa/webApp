@@ -111,7 +111,7 @@ func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
-	signupData := models.Signup{
+	signupData := models.User{
 		Username: r.Form.Get("username"),
 		Email:    r.Form.Get("email"),
 		Password: r.Form.Get("password"),
