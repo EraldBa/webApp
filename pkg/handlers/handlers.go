@@ -68,23 +68,35 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
-
-	stats := models.StatsForm{
+	stats := models.StatsGet{
 		TimeOfDay: r.Form.Get("time_of_day"),
 		Date:      r.Form.Get("desired_date"),
 		Calories:  r.Form.Get("calorie"),
 		Protein:   r.Form.Get("protein"),
 		Carbs:     r.Form.Get("carbs"),
 		Fats:      r.Form.Get("fats"),
+		UserID:    m.App.Session.GetString(r.Context(), "user_id"),
 	}
+
+	if err := m.DB.CheckStats(stats.Date); err != nil {
+		if err = m.DB.UpdateStats(&stats); err != nil {
+			log.Println("Die")
+		}
+	} else {
+		if err = m.DB.InsertNewStats(&stats); err != nil {
+			log.Println("Die")
+		}
+	}
+
 	log.Println(stats)
 }
 
-func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) {
+func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.GetDate
 
 	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	if !nosurf.VerifyToken(nosurf.Token(r), p.CSRFToken) {
 		_, _ = w.Write([]byte("Error 400. Server refused Connection"))

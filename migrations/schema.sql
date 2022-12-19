@@ -38,13 +38,13 @@ ALTER TABLE public.schema_migration OWNER TO erald;
 CREATE TABLE public.stats (
     id integer NOT NULL,
     date timestamp with time zone NOT NULL,
-    breakfast integer NOT NULL,
-    lunch integer NOT NULL,
-    dinner integer NOT NULL,
-    snacks integer NOT NULL,
-    protein integer NOT NULL,
-    carbs integer NOT NULL,
-    fats integer NOT NULL,
+    breakfast real DEFAULT '0'::real NOT NULL,
+    lunch real DEFAULT '0'::real NOT NULL,
+    dinner real DEFAULT '0'::real NOT NULL,
+    snacks real DEFAULT '0'::real NOT NULL,
+    protein real DEFAULT '0'::real NOT NULL,
+    carbs real DEFAULT '0'::real NOT NULL,
+    fats real DEFAULT '0'::real NOT NULL,
     user_id integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
@@ -164,6 +164,13 @@ CREATE UNIQUE INDEX schema_migration_version_idx ON public.schema_migration USIN
 --
 
 CREATE UNIQUE INDEX users_email_idx ON public.users USING btree (email);
+
+
+--
+-- Name: users_username_idx; Type: INDEX; Schema: public; Owner: erald
+--
+
+CREATE UNIQUE INDEX users_username_idx ON public.users USING btree (username);
 
 
 --

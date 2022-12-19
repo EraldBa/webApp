@@ -19,7 +19,7 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/about", handlers.Repo.AboutHandler)
 	mux.Get("/dashboard", handlers.Repo.DashboardHandler)
 	mux.Post("/dashboard", handlers.Repo.PostDashboardHandler)
-	mux.Post("/dashboard-new", handlers.Repo.PostDashNewHandler)
+	mux.Post("/dashboard-new", handlers.Repo.PostDashRefreshHandler)
 	mux.Get("/member", handlers.Repo.MemberHandler)
 	mux.Post("/signed-up", handlers.Repo.PostSignUpHandler)
 	mux.Post("/logged-in", handlers.Repo.PostLogInHandler)

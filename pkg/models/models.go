@@ -8,7 +8,7 @@ type User struct {
 	AccessLevel int
 }
 
-type StatsForm struct {
+type StatsGet struct {
 	Date      string
 	TimeOfDay string
 	Calories  string

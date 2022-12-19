@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dsn        = "host=localhost post=5432 dbname=fitbuddy user= password="
+	dsn        = "host=localhost port=5432 dbname=fitbuddy user= password="
 	portNumber = ":8080"
 )
 
