@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dbInfo     = "host=localhost post=5432 dbname=fitbuddy user= password="
+	dsn        = "host=localhost post=5432 dbname=fitbuddy user= password="
 	portNumber = ":8080"
 )
 
@@ -55,7 +55,7 @@ func run() (*driver.DB, error) {
 	app.Session.Cookie.Secure = app.InProduction
 
 	log.Println("Connecting to database...")
-	db := driver.ConnectDB(dbInfo)
+	db := driver.ConnectDB(dsn)
 
 	log.Println("Connected to database!")
 
