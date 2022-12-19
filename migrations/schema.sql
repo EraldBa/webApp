@@ -167,13 +167,6 @@ CREATE UNIQUE INDEX users_email_idx ON public.users USING btree (email);
 
 
 --
--- Name: users_username_idx; Type: INDEX; Schema: public; Owner: erald
---
-
-CREATE UNIQUE INDEX users_username_idx ON public.users USING btree (username);
-
-
---
 -- Name: stats stats_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: erald
 --
 

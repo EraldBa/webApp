@@ -1,14 +1,11 @@
 package models
 
-type Signup struct {
-	Username string
-	Email    string
-	Password string
-}
-
-type Login struct {
-	Username string
-	Password string
+type User struct {
+	ID          int
+	Username    string
+	Email       string
+	Password    string
+	AccessLevel int
 }
 
 type StatsForm struct {
@@ -18,16 +15,17 @@ type StatsForm struct {
 	Protein   string
 	Carbs     string
 	Fats      string
+	UserID    string
 }
 
 type StatsSend struct {
-	Breakfast int `json:"breakfast"`
-	Lunch     int `json:"lunch"`
-	Dinner    int `json:"dinner"`
-	Snacks    int `json:"snacks"`
-	Protein   int `json:"protein"`
-	Carbs     int `json:"carbs"`
-	Fats      int `json:"fats"`
+	Breakfast float32 `json:"breakfast"`
+	Lunch     float32 `json:"lunch"`
+	Dinner    float32 `json:"dinner"`
+	Snacks    float32 `json:"snacks"`
+	Protein   float32 `json:"protein"`
+	Carbs     float32 `json:"carbs"`
+	Fats      float32 `json:"fats"`
 }
 
 type GetDate struct {

@@ -13,7 +13,7 @@ import (
 
 var app *config.AppConfig
 
-func NewTemplates(a *config.AppConfig) {
+func NewRenderer(a *config.AppConfig) {
 	app = a
 }
 
@@ -22,7 +22,7 @@ func AddDefaultData(r *http.Request, td *models.TemplateData) *models.TemplateDa
 	return td
 }
 
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
 	var tmplCache = map[string]*template.Template{}
 	var err error
 	if app.UseCache {

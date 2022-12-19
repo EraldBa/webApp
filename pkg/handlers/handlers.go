@@ -39,7 +39,7 @@ func NewHandlers(r *Repository) {
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	//remoteIP := r.RemoteAddr
 	//m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
-	render.RenderTemplate(w, r, "home.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // AboutHandler handles /about requests
@@ -49,7 +49,7 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 	//
 	//stringMap["test"] = "Hello from backend!"
 	//stringMap["remote_ip"] = remoteIP
-	render.RenderTemplate(w, r, "about.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "about.page.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		"carbs":     "400",
 		"fats":      "100",
 	}
-	render.RenderTemplate(w, r, "dashboard.page.gohtml", &models.TemplateData{
+	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
 		StringMap: stringMap,
 	})
 }
@@ -107,11 +107,11 @@ func (m *Repository) PostDashNewHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "member.page.gohtml", &models.TemplateData{})
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
-	signupData := models.Signup{
+	signupData := models.User{
 		Username: r.Form.Get("username"),
 		Email:    r.Form.Get("email"),
 		Password: r.Form.Get("password"),
@@ -123,7 +123,7 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 
-	loginData := models.Login{
+	loginData := models.User{
 		Username: r.Form.Get("username"),
 		Password: r.Form.Get("password"),
 	}
@@ -133,12 +133,12 @@ func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.RenderTemplate(w, r, "member.page.gohtml", &models.TemplateData{
+	render.Template(w, r, "member.page.gohtml", &models.TemplateData{
 		Error: "Login unsuccessful, check your info and try again",
 	})
 
 }
 
 func (m *Repository) ContactHandler(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "contact.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "contact.page.gohtml", &models.TemplateData{})
 }
