@@ -27,7 +27,6 @@ func ConnectDB(dsn string) (*DB, error) {
 	if err != nil {
 		panic(err)
 	}
-
 	dbPool.SetMaxOpenConns(maxOpenDBConn)
 	dbPool.SetConnMaxIdleTime(maxIdleDBConn)
 	dbPool.SetConnMaxLifetime(maxDBLifetime)
