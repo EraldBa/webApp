@@ -55,11 +55,8 @@ func run() (*driver.DB, error) {
 	app.Session.Cookie.Secure = app.InProduction
 
 	log.Println("Connecting to database...")
-	db, err := driver.ConnectDB(dbInfo)
-	if err != nil {
-		log.Fatal("Cannot connect to database. Program is exiting...")
-		return nil, err
-	}
+	db := driver.ConnectDB(dbInfo)
+
 	log.Println("Connected to database!")
 
 	app.TemplateCache, err = render.CreateTemplateCache()
@@ -73,6 +70,6 @@ func run() (*driver.DB, error) {
 	handlers.NewHandlers(repo)
 
 	// Passing app config to render package
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 	return db, nil
 }
