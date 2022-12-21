@@ -1,5 +1,6 @@
 package models
 
+// User holds the users info
 type User struct {
 	ID          int
 	Username    string
@@ -8,16 +9,19 @@ type User struct {
 	AccessLevel int
 }
 
+// StatsGet is the stats info that the backend needs
+// to insert or update stats in database
 type StatsGet struct {
 	Date      string
 	TimeOfDay string
-	Calories  string
-	Protein   string
-	Carbs     string
-	Fats      string
+	Calories  float64
+	Protein   float64
+	Carbs     float64
+	Fats      float64
 	UserID    string
 }
 
+// StatsSend holds the info that needs to be sent to frontend user
 type StatsSend struct {
 	Breakfast float32 `json:"breakfast"`
 	Lunch     float32 `json:"lunch"`
@@ -28,6 +32,7 @@ type StatsSend struct {
 	Fats      float32 `json:"fats"`
 }
 
+// GetDate is the json that backend receives when frontend user requests stat data
 type GetDate struct {
 	Date      string `json:"date"`
 	CSRFToken string `json:"csrf_token"`

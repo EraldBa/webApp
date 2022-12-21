@@ -2,16 +2,18 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/driver"
+	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
+	"github.com/EraldBa/webApp/pkg/render"
 	"github.com/EraldBa/webApp/pkg/repository"
 	"github.com/EraldBa/webApp/pkg/repository/dbrepo"
 	"github.com/justinas/nosurf"
 	"log"
 	"net/http"
-
-	"github.com/EraldBa/webApp/pkg/config"
-	"github.com/EraldBa/webApp/pkg/render"
+	"strconv"
+	"time"
 )
 
 // Repository is the prototype of repository type
@@ -53,69 +55,76 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	stringMap := map[string]string{
-		"breakfast": "100",
-		"lunch":     "100",
-		"dinner":    "100",
-		"snacks":    "100",
-		"protein":   "200",
-		"carbs":     "400",
-		"fats":      "100",
+	userID := m.App.Session.GetString(r.Context(), "user_id")
+	currentDate := time.Now().Format("2006-01-02")
+	statsSend := m.DB.GetStats(currentDate, userID)
+
+	floatMap := map[string]float32{
+		"breakfast": statsSend.Breakfast,
+		"lunch":     statsSend.Lunch,
+		"dinner":    statsSend.Dinner,
+		"snacks":    statsSend.Snacks,
+		"protein":   statsSend.Protein,
+		"carbs":     statsSend.Carbs,
+		"fats":      statsSend.Fats,
 	}
 	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
-		StringMap: stringMap,
+		FloatMap: floatMap,
 	})
 }
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	bitSize := 32
+	userID := m.App.Session.GetString(r.Context(), "user_id")
+	calories, err := strconv.ParseFloat(r.Form.Get("calorie"), bitSize)
+	helpers.ErrorCheck(err)
+	protein, err := strconv.ParseFloat(r.Form.Get("protein"), bitSize)
+	helpers.ErrorCheck(err)
+	carbs, err := strconv.ParseFloat(r.Form.Get("carbs"), bitSize)
+	helpers.ErrorCheck(err)
+	fats, err := strconv.ParseFloat(r.Form.Get("fats"), bitSize)
+	helpers.ErrorCheck(err)
+
 	stats := models.StatsGet{
 		TimeOfDay: r.Form.Get("time_of_day"),
 		Date:      r.Form.Get("desired_date"),
-		Calories:  r.Form.Get("calorie"),
-		Protein:   r.Form.Get("protein"),
-		Carbs:     r.Form.Get("carbs"),
-		Fats:      r.Form.Get("fats"),
-		UserID:    m.App.Session.GetString(r.Context(), "user_id"),
+		Calories:  calories,
+		Protein:   protein,
+		Carbs:     carbs,
+		Fats:      fats,
+		UserID:    userID,
 	}
-
-	if err := m.DB.CheckStats(stats.Date); err != nil {
-		if err = m.DB.UpdateStats(&stats); err != nil {
-			log.Println("Die")
-		}
+	// If there's an error, row doesn't exist so making a new one, else update the row
+	if err = m.DB.CheckStats(stats.Date, userID); err != nil {
+		err = m.DB.InsertNewStats(&stats)
+		helpers.ErrorCheck(err)
 	} else {
-		if err = m.DB.InsertNewStats(&stats); err != nil {
-			log.Println("Die")
-		}
+		err = m.DB.UpdateStats(&stats)
+		helpers.ErrorCheck(err)
 	}
-
-	log.Println(stats)
 }
 
 func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Request) {
-	var p models.GetDate
-
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+	var receivedJSON models.GetDate
+	// Receiving json from frontend
+	if err := json.NewDecoder(r.Body).Decode(&receivedJSON); err != nil {
 		log.Println(err)
 		return
 	}
-	if !nosurf.VerifyToken(nosurf.Token(r), p.CSRFToken) {
+	// Checking if token sent in json is valid
+	if !nosurf.VerifyToken(nosurf.Token(r), receivedJSON.CSRFToken) {
 		_, _ = w.Write([]byte("Error 400. Server refused Connection"))
 		return
 	}
+	userID := m.App.Session.GetString(r.Context(), "user_id")
 
-	if p.Date == "2022-11-19" {
-		a := models.StatsSend{
-			Breakfast: 400,
-			Lunch:     500,
-			Dinner:    600,
-			Snacks:    200,
-			Protein:   180,
-			Carbs:     360,
-			Fats:      80,
-		}
-		b, _ := json.Marshal(a)
-		_, _ = w.Write(b)
-	}
+	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
+
+	statsSendJSON, err := json.Marshal(statsSend)
+	helpers.ErrorCheck(err)
+
+	_, _ = w.Write(statsSendJSON)
+
 }
 
 func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {

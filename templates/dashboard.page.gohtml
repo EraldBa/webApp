@@ -61,13 +61,13 @@
 
         let stat_cache = new Map([
             [current_date, {
-                breakfast: parseInt({{index .StringMap "breakfast"}}),
-                lunch: parseInt({{index .StringMap "lunch"}}),
-                dinner: parseInt({{index .StringMap "dinner"}}),
-                snacks: parseInt({{index .StringMap "snacks"}}),
-                protein: parseInt({{index .StringMap "protein"}}),
-                carbs: parseInt({{index .StringMap "carbs"}}),
-                fats: parseInt({{index .StringMap "fats"}}),
+                breakfast: parseFloat({{index .FloatMap "breakfast"}}),
+                lunch: parseFloat({{index .FloatMap "lunch"}}),
+                dinner: parseFloat({{index .FloatMap "dinner"}}),
+                snacks: parseFloat({{index .FloatMap "snacks"}}),
+                protein: parseFloat({{index .FloatMap "protein"}}),
+                carbs: parseFloat({{index .FloatMap "carbs"}}),
+                fats: parseFloat({{index .FloatMap "fats"}}),
             }]
         ]);
 
