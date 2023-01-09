@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dsn        = "host=localhost port=5432 dbname=fitbuddy user= password="
+	dsn        = "host=localhost port=5432 dbname=fitbuddy user=erald password=95486672"
 	portNumber = ":8080"
 )
 
@@ -41,7 +41,6 @@ func run() (*driver.DB, error) {
 	var err error
 	// Set to true if in production, for now it's false
 	app.InProduction = false
-
 	// Initializing session
 	app.Session = scs.New()
 	// Setting session lifetime
