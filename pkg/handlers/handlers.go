@@ -41,6 +41,7 @@ func NewHandlers(r *Repository) {
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	//remoteIP := r.RemoteAddr
 	//m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
+	m.App.Session.Put(r.Context(), "user_id", 1)
 	render.Template(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
@@ -55,7 +56,8 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	userID := m.App.Session.GetString(r.Context(), "user_id")
+	userID := m.App.Session.GetInt(r.Context(), "user_id")
+	log.Println(userID)
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
@@ -68,6 +70,7 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		"carbs":     statsSend.Carbs,
 		"fats":      statsSend.Fats,
 	}
+	log.Println(floatMap)
 	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
 		FloatMap: floatMap,
 	})
@@ -75,7 +78,7 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	bitSize := 32
-	userID := m.App.Session.GetString(r.Context(), "user_id")
+	userID := m.App.Session.GetInt(r.Context(), "user_id")
 	calories, err := strconv.ParseFloat(r.Form.Get("calorie"), bitSize)
 	helpers.ErrorCheck(err)
 	protein, err := strconv.ParseFloat(r.Form.Get("protein"), bitSize)
@@ -96,10 +99,10 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 	}
 	// If there's an error, row doesn't exist so making a new one, else update the row
 	if err = m.DB.CheckStats(stats.Date, userID); err != nil {
-		err = m.DB.InsertNewStats(&stats)
+		err = m.DB.UpdateStats(&stats)
 		helpers.ErrorCheck(err)
 	} else {
-		err = m.DB.UpdateStats(&stats)
+		err = m.DB.InsertNewStats(&stats)
 		helpers.ErrorCheck(err)
 	}
 }
@@ -116,7 +119,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 		_, _ = w.Write([]byte("Error 400. Server refused Connection"))
 		return
 	}
-	userID := m.App.Session.GetString(r.Context(), "user_id")
+	userID := m.App.Session.GetInt(r.Context(), "user_id")
 
 	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
 

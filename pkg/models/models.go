@@ -18,7 +18,7 @@ type StatsGet struct {
 	Protein   float64
 	Carbs     float64
 	Fats      float64
-	UserID    string
+	UserID    int
 }
 
 // StatsSend holds the info that needs to be sent to frontend user

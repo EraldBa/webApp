@@ -3,6 +3,7 @@ package dbrepo
 import (
 	"context"
 	"github.com/EraldBa/webApp/pkg/models"
+	"log"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
 		s.UserID,
 		time.Now(),
 	)
-
+	log.Println("It's insertStats")
 	return err
 }
 
@@ -71,12 +72,12 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 		time.Now(),
 		s.UserID,
 	)
-
+	log.Println("It's updateStats")
 	return err
 }
 
 // GetStats returns stats of a user of a particular date
-func (m *postgresDBRepo) GetStats(date, userID string) *models.StatsSend {
+func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 	var statsSend models.StatsSend
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -88,6 +89,7 @@ func (m *postgresDBRepo) GetStats(date, userID string) *models.StatsSend {
 	row := m.DB.QueryRowContext(ctx, statement, userID, date)
 
 	if err := row.Err(); err != nil {
+		log.Println("Something wrong with getting stats:", err)
 		return &statsSend
 	}
 	_ = row.Scan(
@@ -103,7 +105,7 @@ func (m *postgresDBRepo) GetStats(date, userID string) *models.StatsSend {
 }
 
 // CheckStats checks if stats row exists
-func (m *postgresDBRepo) CheckStats(date, userID string) error {
+func (m *postgresDBRepo) CheckStats(date string, userID int) error {
 	statement := `select * from stats where user_id = $1 and date = $2`
 
 	row := m.DB.QueryRow(statement, userID, date)
