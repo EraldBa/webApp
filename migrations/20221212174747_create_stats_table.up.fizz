@@ -1,6 +1,6 @@
 create_table("stats") {
   t.Column("id", "integer", {primary: true})
-  t.Column("date", "datetime", {})
+  t.Column("date", "date", {})
   t.Column("breakfast", "real", {"default": 0})
   t.Column("lunch", "real", {"default": 0})
   t.Column("dinner", "real", {"default": 0})

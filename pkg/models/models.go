@@ -1,5 +1,7 @@
 package models
 
+import "net/http"
+
 // User holds the users info
 type User struct {
 	ID          int
@@ -36,4 +38,10 @@ type StatsSend struct {
 type GetDate struct {
 	Date      string `json:"date"`
 	CSRFToken string `json:"csrf_token"`
+}
+
+type Macros struct {
+	Request   *http.Request
+	Precision uint8
+	BitSize   int
 }

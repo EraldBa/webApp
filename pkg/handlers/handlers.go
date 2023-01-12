@@ -12,7 +12,6 @@ import (
 	"github.com/justinas/nosurf"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -57,7 +56,6 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	userID := m.App.Session.GetInt(r.Context(), "user_id")
-	log.Println(userID)
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
@@ -70,35 +68,32 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		"carbs":     statsSend.Carbs,
 		"fats":      statsSend.Fats,
 	}
-	log.Println(floatMap)
+
 	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
 		FloatMap: floatMap,
 	})
 }
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	bitSize := 32
 	userID := m.App.Session.GetInt(r.Context(), "user_id")
-	calories, err := strconv.ParseFloat(r.Form.Get("calorie"), bitSize)
-	helpers.ErrorCheck(err)
-	protein, err := strconv.ParseFloat(r.Form.Get("protein"), bitSize)
-	helpers.ErrorCheck(err)
-	carbs, err := strconv.ParseFloat(r.Form.Get("carbs"), bitSize)
-	helpers.ErrorCheck(err)
-	fats, err := strconv.ParseFloat(r.Form.Get("fats"), bitSize)
-	helpers.ErrorCheck(err)
+
+	macros := models.Macros{
+		Request:   r,
+		Precision: 2,
+		BitSize:   32,
+	}
 
 	stats := models.StatsGet{
 		TimeOfDay: r.Form.Get("time_of_day"),
 		Date:      r.Form.Get("desired_date"),
-		Calories:  calories,
-		Protein:   protein,
-		Carbs:     carbs,
-		Fats:      fats,
+		Calories:  macros.GetMacros("calorie"),
+		Protein:   macros.GetMacros("protein"),
+		Carbs:     macros.GetMacros("carbs"),
+		Fats:      macros.GetMacros("fats"),
 		UserID:    userID,
 	}
 	// If there's an error, row doesn't exist so making a new one, else update the row
-	if err = m.DB.CheckStats(stats.Date, userID); err != nil {
+	if err := m.DB.CheckStats(stats.Date, userID); err == nil {
 		err = m.DB.UpdateStats(&stats)
 		helpers.ErrorCheck(err)
 	} else {

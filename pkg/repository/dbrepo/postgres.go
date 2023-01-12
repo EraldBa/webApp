@@ -2,6 +2,8 @@ package dbrepo
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"github.com/EraldBa/webApp/pkg/models"
 	"log"
 	"time"
@@ -12,12 +14,12 @@ func (m *postgresDBRepo) InsertUser(u *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	statement := `insert into users 
+	stmt := `insert into users 
     			(username, email, password, access_level, created_at, updated_at)
 				values ($1, $2, $3, $4, $5, $6)`
 	_, err := m.DB.ExecContext(
 		ctx,
-		statement,
+		stmt,
 		u.Username,
 		u.Email,
 		u.Password,
@@ -33,14 +35,15 @@ func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	statement := `insert into stats 
-				(date, $1, protein, carbs, fats, user_id, updated_at)
-				values($2, $3, $4, $5, $6, $7, $8)`
+	stmt := `insert into stats 
+				(date, %s, protein, carbs, fats, user_id, created_at, updated_at)
+				values($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	stmt = fmt.Sprintf(stmt, s.TimeOfDay)
 
 	_, err := m.DB.ExecContext(
 		ctx,
-		statement,
-		s.TimeOfDay,
+		stmt,
 		s.Date,
 		s.Calories,
 		s.Protein,
@@ -48,8 +51,9 @@ func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
 		s.Fats,
 		s.UserID,
 		time.Now(),
+		time.Now(),
 	)
-	log.Println("It's insertStats")
+
 	return err
 }
 
@@ -58,21 +62,24 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	statement := `update stats
-				set $1 = $1 + $2, protein = protein + $3, carbs = carbs + $4, fats = fats + $5, updated_at = $6  
-				where user_id = $7`
+	stmt := `update stats
+				set %s = %s + $1, protein = protein + $2, carbs = carbs + $3, fats = fats + $4, updated_at = $5  
+				where user_id = $6 and date = $7`
+
+	stmt = fmt.Sprintf(stmt, s.TimeOfDay, s.TimeOfDay)
+
 	_, err := m.DB.ExecContext(
 		ctx,
-		statement,
-		s.TimeOfDay,
+		stmt,
 		s.Calories,
 		s.Protein,
 		s.Carbs,
 		s.Fats,
 		time.Now(),
 		s.UserID,
+		s.Date,
 	)
-	log.Println("It's updateStats")
+
 	return err
 }
 
@@ -83,16 +90,16 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	statement := `select (breakfast, lunch, dinner, snacks, protein, carbs, fats) 
+	stmt := `select breakfast, lunch, dinner, snacks, protein, carbs, fats
 				from stats
 				where user_id = $1 and date = $2`
-	row := m.DB.QueryRowContext(ctx, statement, userID, date)
+	row := m.DB.QueryRowContext(ctx, stmt, userID, date)
 
 	if err := row.Err(); err != nil {
 		log.Println("Something wrong with getting stats:", err)
 		return &statsSend
 	}
-	_ = row.Scan(
+	err := row.Scan(
 		&statsSend.Breakfast,
 		&statsSend.Lunch,
 		&statsSend.Dinner,
@@ -101,14 +108,20 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 		&statsSend.Carbs,
 		&statsSend.Fats,
 	)
+	if err != nil {
+		log.Println(err)
+	}
 	return &statsSend
 }
 
 // CheckStats checks if stats row exists
 func (m *postgresDBRepo) CheckStats(date string, userID int) error {
-	statement := `select * from stats where user_id = $1 and date = $2`
+	var test []byte
+	stmt := `select * from stats where user_id = $1 and date = $2`
 
-	row := m.DB.QueryRow(statement, userID, date)
-
-	return row.Err()
+	err := m.DB.QueryRow(stmt, userID, date).Scan(&test)
+	if err != sql.ErrNoRows {
+		return nil
+	}
+	return err
 }
