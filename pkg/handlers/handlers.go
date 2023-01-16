@@ -86,10 +86,10 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 	stats := models.StatsGet{
 		TimeOfDay: r.Form.Get("time_of_day"),
 		Date:      r.Form.Get("desired_date"),
-		Calories:  macros.GetMacros("calorie"),
-		Protein:   macros.GetMacros("protein"),
-		Carbs:     macros.GetMacros("carbs"),
-		Fats:      macros.GetMacros("fats"),
+		Calories:  macros.GetMacro("calorie"),
+		Protein:   macros.GetMacro("protein"),
+		Carbs:     macros.GetMacro("carbs"),
+		Fats:      macros.GetMacro("fats"),
 		UserID:    userID,
 	}
 	// If there's an error, row doesn't exist so making a new one, else update the row

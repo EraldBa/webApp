@@ -8,4 +8,6 @@ type DatabaseRepo interface {
 	UpdateStats(s *models.StatsGet) error
 	GetStats(date string, userID int) *models.StatsSend
 	CheckStats(date string, userID int) error
+	Authenticator(username, testPassword string) (int, string, error)
+	GetUserById(id int) (models.User, error)
 }

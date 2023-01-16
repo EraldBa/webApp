@@ -3,27 +3,27 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/EraldBa/webApp/pkg/models"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
 )
 
 // InsertUser inserts new user to database
-func (m *postgresDBRepo) InsertUser(u *models.User) error {
+func (m *postgresDBRepo) InsertUser(user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `insert into users 
     			(username, email, password, access_level, created_at, updated_at)
 				values ($1, $2, $3, $4, $5, $6)`
-	_, err := m.DB.ExecContext(
-		ctx,
-		stmt,
-		u.Username,
-		u.Email,
-		u.Password,
-		u.AccessLevel,
+	_, err := m.DB.ExecContext(ctx, stmt,
+		user.Username,
+		user.Email,
+		user.Password,
+		user.AccessLevel,
 		time.Now(),
 		time.Now(),
 	)
@@ -41,9 +41,7 @@ func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
 
 	stmt = fmt.Sprintf(stmt, s.TimeOfDay)
 
-	_, err := m.DB.ExecContext(
-		ctx,
-		stmt,
+	_, err := m.DB.ExecContext(ctx, stmt,
 		s.Date,
 		s.Calories,
 		s.Protein,
@@ -68,9 +66,7 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 
 	stmt = fmt.Sprintf(stmt, s.TimeOfDay, s.TimeOfDay)
 
-	_, err := m.DB.ExecContext(
-		ctx,
-		stmt,
+	_, err := m.DB.ExecContext(ctx, stmt,
 		s.Calories,
 		s.Protein,
 		s.Carbs,
@@ -90,10 +86,10 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `select breakfast, lunch, dinner, snacks, protein, carbs, fats
+	query := `select breakfast, lunch, dinner, snacks, protein, carbs, fats
 				from stats
 				where user_id = $1 and date = $2`
-	row := m.DB.QueryRowContext(ctx, stmt, userID, date)
+	row := m.DB.QueryRowContext(ctx, query, userID, date)
 
 	if err := row.Err(); err != nil {
 		log.Println("Something wrong with getting stats:", err)
@@ -117,11 +113,57 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 // CheckStats checks if stats row exists
 func (m *postgresDBRepo) CheckStats(date string, userID int) error {
 	var test []byte
-	stmt := `select * from stats where user_id = $1 and date = $2`
+	query := `select * from stats where user_id = $1 and date = $2`
 
-	err := m.DB.QueryRow(stmt, userID, date).Scan(&test)
+	err := m.DB.QueryRow(query, userID, date).Scan(&test)
 	if err != sql.ErrNoRows {
 		return nil
 	}
 	return err
+}
+
+func (m *postgresDBRepo) Authenticator(username, testPassword string) (int, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id int
+	var hashedPassword string
+
+	row := m.DB.QueryRowContext(ctx, "select id, password from users where username = $1", username)
+
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		return id, "", err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
+
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return 0, "", errors.New("incorrect password")
+	} else if err != nil {
+		return 0, "", err
+	}
+
+	return id, hashedPassword, nil
+}
+
+func (m *postgresDBRepo) GetUserById(id int) (models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select id, username, password, access_level, created_at, updated_at
+			from users where id = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var user models.User
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+		&user.AccessLevel,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	return user, err
 }

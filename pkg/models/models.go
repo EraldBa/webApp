@@ -9,6 +9,8 @@ type User struct {
 	Email       string
 	Password    string
 	AccessLevel int
+	CreatedAt   string
+	UpdatedAt   string
 }
 
 // StatsGet is the stats info that the backend needs

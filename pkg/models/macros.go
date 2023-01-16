@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func (m *Macros) GetMacros(keyword string) float64 {
+func (m *Macros) GetMacro(keyword string) float64 {
 	value, err := strconv.ParseFloat(m.Request.Form.Get(keyword), m.BitSize)
 	if err != nil {
 		log.Println(err)
