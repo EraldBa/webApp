@@ -141,7 +141,20 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
+	_ = m.App.Session.RenewToken(r.Context())
 
+	err := r.ParseForm()
+	helpers.ErrorCheck(err)
+
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	id, _, err := m.DB.Authenticator(username, password)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "user_id", id)
 	loginData := models.User{
 		Username: r.Form.Get("username"),
 		Password: r.Form.Get("password"),
@@ -156,6 +169,15 @@ func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 		Error: "Login unsuccessful, check your info and try again",
 	})
 
+}
+
+func (m *Repository) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	err := m.App.Session.Destroy(r.Context())
+	helpers.ErrorCheck(err)
+
+	err = m.App.Session.RenewToken(r.Context())
+	helpers.ErrorCheck(err)
+	http.Redirect(w, r, "/member", http.StatusSeeOther)
 }
 
 func (m *Repository) ContactHandler(w http.ResponseWriter, r *http.Request) {

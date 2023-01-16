@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -16,13 +17,18 @@ func (m *postgresDBRepo) InsertUser(user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		return err
+	}
 	stmt := `insert into users 
     			(username, email, password, access_level, created_at, updated_at)
 				values ($1, $2, $3, $4, $5, $6)`
-	_, err := m.DB.ExecContext(ctx, stmt,
+
+	_, err = m.DB.ExecContext(ctx, stmt,
 		user.Username,
 		user.Email,
-		user.Password,
+		hashedPassword,
 		user.AccessLevel,
 		time.Now(),
 		time.Now(),
@@ -104,9 +110,8 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 		&statsSend.Carbs,
 		&statsSend.Fats,
 	)
-	if err != nil {
-		log.Println(err)
-	}
+	helpers.ErrorCheck(err)
+
 	return &statsSend
 }
 
