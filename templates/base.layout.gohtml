@@ -38,12 +38,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/about">About</a>
                     </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Member Options
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="/member">Log in/Sign Up</a></li>
+                            {{if eq .IsAuthenticated 1}}
+                                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                            {{else}}
+                                <li><a class="dropdown-item" href="/member">Log in/Sign Up</a></li>
+                            {{end}}
                             <li><a class="dropdown-item" href="/dashboard">Start Tracking</a></li>
                         </ul>
                     </li>

@@ -10,7 +10,6 @@ import (
 	"github.com/EraldBa/webApp/pkg/repository"
 	"github.com/EraldBa/webApp/pkg/repository/dbrepo"
 	"github.com/justinas/nosurf"
-	"log"
 	"net/http"
 	"time"
 )
@@ -38,7 +37,6 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	m.App.Session.Put(r.Context(), "user_id", 1)
 	render.Template(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
@@ -49,6 +47,14 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	userID := m.App.Session.GetInt(r.Context(), "user_id")
+	isLoggedIn := helpers.IsAuthenticated(r)
+
+	if !isLoggedIn {
+		m.App.Session.Put(r.Context(), "error", "You're not logged in, please log in to view your stats!")
+		http.Redirect(w, r, "/member", http.StatusSeeOther)
+		return
+	}
+
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
@@ -71,6 +77,7 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 	err := r.ParseForm()
 	if err != nil {
 		helpers.ServerError(w, err)
+		return
 	}
 
 	userID := m.App.Session.GetInt(r.Context(), "user_id")
@@ -106,7 +113,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 	var receivedJSON models.GetDate
 	// Receiving json from frontend
 	if err := json.NewDecoder(r.Body).Decode(&receivedJSON); err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 		return
 	}
 	// Checking if token sent in json is valid
@@ -119,10 +126,13 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
 
 	statsSendJSON, err := json.Marshal(statsSend)
-	helpers.ErrorCheck(err)
+	if err != nil {
+		helpers.ServerError(w, err)
+	}
 
-	_, _ = w.Write(statsSendJSON)
-
+	if _, err = w.Write(statsSendJSON); err != nil {
+		helpers.ServerError(w, err)
+	}
 }
 
 func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
@@ -131,52 +141,56 @@ func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 	signupData := models.User{
-		Username: r.Form.Get("username"),
-		Email:    r.Form.Get("email"),
-		Password: r.Form.Get("password"),
+		Username:    r.Form.Get("username"),
+		Email:       r.Form.Get("email"),
+		Password:    r.Form.Get("password"),
+		AccessLevel: 1,
 	}
-	log.Println(signupData)
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 
+	if err := m.DB.InsertUser(&signupData); err != nil {
+		helpers.ClientError(w, http.StatusInternalServerError)
+		return
+	}
+
+	m.PostLogInHandler(w, r)
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 	_ = m.App.Session.RenewToken(r.Context())
 
 	err := r.ParseForm()
-	helpers.ErrorCheck(err)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
 
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	id, _, err := m.DB.Authenticator(username, password)
 	if err != nil {
-		log.Println(err)
+		m.App.Session.Put(r.Context(), "error", err.Error())
+		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
-
+	m.App.Session.Put(r.Context(), "flash", "Logged in successfully!")
 	m.App.Session.Put(r.Context(), "user_id", id)
-	loginData := models.User{
-		Username: r.Form.Get("username"),
-		Password: r.Form.Get("password"),
-	}
-
-	if loginData.Username == "Erald" {
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-		return
-	}
-
-	render.Template(w, r, "member.page.gohtml", &models.TemplateData{
-		Error: "Login unsuccessful, check your info and try again",
-	})
-
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (m *Repository) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	err := m.App.Session.Destroy(r.Context())
-	helpers.ErrorCheck(err)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
 
 	err = m.App.Session.RenewToken(r.Context())
-	helpers.ErrorCheck(err)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	m.App.Session.Put(r.Context(), "flash", "Logged out successfully!")
+
 	http.Redirect(w, r, "/member", http.StatusSeeOther)
 }
 

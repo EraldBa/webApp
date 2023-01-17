@@ -294,7 +294,11 @@
                 }
             })
         }
+        let flash = "{{.Flash}}";
 
+        if (flash !== "") {
+            attention.toast({icon: "success", msg : flash})
+        }
 
     </script>
 {{end}}

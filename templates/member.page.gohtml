@@ -115,11 +115,9 @@
         login.addEventListener("click", ( )=>{
             container.classList.remove("active");
         });
-
         let failed_attempt = "{{.Error}}";
-
+        let attention = Prompt();
         if (failed_attempt !== ""){
-            let attention = Prompt();
             attention.toast({icon: "error", msg: failed_attempt});
         }
     </script>

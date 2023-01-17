@@ -8,5 +8,6 @@ type TemplateData struct {
 	Data            map[string]interface{}
 	CSRFToken       string
 	Error           string
+	Flash           string
 	IsAuthenticated int
 }
