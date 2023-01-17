@@ -4,10 +4,12 @@ import (
 	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/driver"
 	"github.com/EraldBa/webApp/pkg/handlers"
+	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/render"
 	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -41,6 +43,11 @@ func run() (*driver.DB, error) {
 	var err error
 	// Set to true if in production, for now it's false
 	app.InProduction = false
+
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	// Initializing session
 	app.Session = scs.New()
 	// Setting session lifetime
@@ -67,7 +74,7 @@ func run() (*driver.DB, error) {
 
 	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
-
+	helpers.NewHelpers(&app)
 	// Passing app config to render package
 	render.NewRenderer(&app)
 	return db, nil

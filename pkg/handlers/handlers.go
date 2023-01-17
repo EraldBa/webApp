@@ -38,19 +38,12 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	//remoteIP := r.RemoteAddr
-	//m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	m.App.Session.Put(r.Context(), "user_id", 1)
 	render.Template(w, r, "home.page.gohtml", &models.TemplateData{})
 }
 
 // AboutHandler handles /about requests
 func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
-	//stringMap := make(map[string]string)
-	//remoteIP := m.App.Session.GetString(r.Context(), "remote_ip")
-	//
-	//stringMap["test"] = "Hello from backend!"
-	//stringMap["remote_ip"] = remoteIP
 	render.Template(w, r, "about.page.gohtml", &models.TemplateData{})
 }
 
@@ -75,6 +68,11 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		helpers.ServerError(w, err)
+	}
+
 	userID := m.App.Session.GetInt(r.Context(), "user_id")
 
 	macros := models.Macros{
@@ -93,12 +91,14 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 		UserID:    userID,
 	}
 	// If there's an error, row doesn't exist so making a new one, else update the row
-	if err := m.DB.CheckStats(stats.Date, userID); err == nil {
+	if err = m.DB.CheckStats(stats.Date, userID); err == nil {
 		err = m.DB.UpdateStats(&stats)
-		helpers.ErrorCheck(err)
 	} else {
 		err = m.DB.InsertNewStats(&stats)
-		helpers.ErrorCheck(err)
+	}
+
+	if err != nil {
+		helpers.ServerError(w, err)
 	}
 }
 
