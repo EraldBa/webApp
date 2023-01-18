@@ -124,9 +124,6 @@
             }
         }
 
-
-
-        let attention = Prompt();
         document.getElementById("update").addEventListener("click", function(){
             let html = `
             <form id="stats-update" action="/dashboard" method="post" style="width: 450px; display: inline-block;">
@@ -294,11 +291,7 @@
                 }
             })
         }
-        let flash = "{{.Flash}}";
 
-        if (flash !== "") {
-            attention.toast({icon: "success", msg : flash})
-        }
 
     </script>
 {{end}}

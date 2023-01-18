@@ -55,12 +55,6 @@
                                 <input  type="password" name="password" class="password" placeholder="Create a password" required autocomplete="off">
                                 <i class="uil uil-lock icon"></i>
                             </div>
-                            <div class="input-field">
-                                <input type="password" class="password" placeholder="Confirm a password" required autocomplete="off">
-                                <i class="uil uil-lock icon"></i>
-                                <i class="uil uil-eye-slash showHidePw"></i>
-                            </div>
-
                             <div class="input-field button">
                                 <input type="submit" value="Signup">
                             </div>
@@ -115,11 +109,7 @@
         login.addEventListener("click", ( )=>{
             container.classList.remove("active");
         });
-        let failed_attempt = "{{.Error}}";
-        let attention = Prompt();
-        if (failed_attempt !== ""){
-            attention.toast({icon: "error", msg: failed_attempt});
-        }
+
     </script>
 
 {{end}}

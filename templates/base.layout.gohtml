@@ -46,10 +46,10 @@
                         <ul class="dropdown-menu dropdown-menu-dark">
                             {{if eq .IsAuthenticated 1}}
                                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                                <li><a class="dropdown-item" href="/dashboard">Start Tracking</a></li>
                             {{else}}
                                 <li><a class="dropdown-item" href="/member">Log in/Sign Up</a></li>
                             {{end}}
-                            <li><a class="dropdown-item" href="/dashboard">Start Tracking</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -78,11 +78,23 @@
     <script src="/static/js/popper.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/script.js"></script>
-
+    <script>
+        let attention = Prompt();
+    </script>
 {{block "js" .}}
 
 {{end}}
+    <script>
 
+        {{with $flash:=.Flash}}
+            attention.toast({icon: "success", msg : {{$flash}}})
+        {{end}}
+
+        {{with $error:=.Error}}
+            attention.toast({icon: "error", msg: {{$error}}});
+        {{end}}
+
+    </script>
 </body>
 </html>
 {{end}}
