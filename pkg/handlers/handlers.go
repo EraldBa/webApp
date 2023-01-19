@@ -168,7 +168,7 @@ func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	id, _, err := m.DB.Authenticator(username, password)
 	if err != nil {
-		m.App.Session.Put(r.Context(), "error", err.Error())
+		m.App.Session.Put(r.Context(), "error", "Wrong credentials. Try again.")
 		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}

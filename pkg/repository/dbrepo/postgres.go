@@ -152,7 +152,7 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (int, stri
 	return id, hashedPassword, nil
 }
 
-func (m *postgresDBRepo) GetUserById(id int) (models.User, error) {
+func (m *postgresDBRepo) GetUserById(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -170,5 +170,5 @@ func (m *postgresDBRepo) GetUserById(id int) (models.User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-	return user, err
+	return &user, err
 }

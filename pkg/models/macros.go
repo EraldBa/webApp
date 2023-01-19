@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func (m *Macros) GetMacro(keyword string) float64 {
+func (m *Macros) GetMacro(keyword string) float32 {
 	value, err := strconv.ParseFloat(m.Request.Form.Get(keyword), m.BitSize)
 	if err != nil {
 		log.Println(err)
@@ -16,5 +16,5 @@ func (m *Macros) GetMacro(keyword string) float64 {
 	ratio := math.Pow(10, float64(m.Precision))
 	value = math.Round(value*ratio) / ratio
 
-	return value
+	return float32(value)
 }

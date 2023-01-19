@@ -8,7 +8,7 @@ type User struct {
 	Username    string
 	Email       string
 	Password    string
-	AccessLevel int
+	AccessLevel uint8
 	CreatedAt   string
 	UpdatedAt   string
 }
@@ -18,10 +18,10 @@ type User struct {
 type StatsGet struct {
 	Date      string
 	TimeOfDay string
-	Calories  float64
-	Protein   float64
-	Carbs     float64
-	Fats      float64
+	Calories  float32
+	Protein   float32
+	Carbs     float32
+	Fats      float32
 	UserID    int
 }
 
