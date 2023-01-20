@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/driver"
 	"github.com/EraldBa/webApp/pkg/helpers"
@@ -98,14 +99,14 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	// Checking if token sent in json is valid
-	if !nosurf.VerifyToken(nosurf.Token(r), receivedJSON.CSRFToken) {
-		_, _ = w.Write([]byte("Error 400. Server refused Connection"))
+	csrfIsValid := nosurf.VerifyToken(nosurf.Token(r), receivedJSON.CSRFToken)
+	if !csrfIsValid {
+		helpers.ClientError(w, http.StatusBadRequest)
 		return
 	}
+
 	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
-
 	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
-
 	statsSendJSON, err := json.Marshal(statsSend)
 	if err != nil {
 		helpers.ServerError(w, err)
@@ -121,6 +122,12 @@ func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
 	signupData := models.User{
 		Username:    r.Form.Get("username"),
 		Email:       r.Form.Get("email"),
@@ -133,11 +140,14 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
-
+	m.App.Session.Put(r.Context(), "new_user", true)
 	m.PostLogInHandler(w, r)
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
+	var msgKey string
+	var msg string
+
 	_ = m.App.Session.RenewToken(r.Context())
 
 	err := r.ParseForm()
@@ -154,8 +164,19 @@ func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
-	m.App.Session.Put(r.Context(), "flash", "Logged in successfully!")
+
+	newUser := m.App.Session.GetBool(r.Context(), "new_user")
+	if newUser {
+		msgKey = "success"
+		msg = fmt.Sprintf("Welcome to FitBuddy %s!", username)
+	} else {
+		msgKey = "flash"
+		msg = fmt.Sprintf("Logged in successfully as %s!", username)
+	}
+
+	m.App.Session.Put(r.Context(), msgKey, msg)
 	m.App.Session.Put(r.Context(), "user_id", id)
+
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 

@@ -4,6 +4,7 @@ package models
 type TemplateData struct {
 	Stats           *StatsSend
 	CSRFToken       string
+	Success         string
 	Error           string
 	Flash           string
 	IsAuthenticated int

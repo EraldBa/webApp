@@ -21,7 +21,9 @@ var app config.AppConfig
 
 func main() {
 	db, err := run()
-	helpers.ErrorCheck(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer db.SQL.Close()
 

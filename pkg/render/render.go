@@ -19,6 +19,7 @@ func NewRenderer(a *config.AppConfig) {
 
 func AddDefaultData(r *http.Request, td *models.TemplateData) *models.TemplateData {
 	td.CSRFToken = nosurf.Token(r)
+	td.Success = app.Session.PopString(r.Context(), "success")
 	td.Error = app.Session.PopString(r.Context(), "error")
 	td.Flash = app.Session.PopString(r.Context(), "flash")
 	if app.Session.Exists(r.Context(), "user_id") {

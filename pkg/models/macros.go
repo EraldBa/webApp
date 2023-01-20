@@ -6,28 +6,27 @@ import (
 	"strconv"
 )
 
-var macros = [4]string{
-	"calorie",
-	"protein",
-	"carbs",
-	"fats",
+var macros = map[string]float32{
+	"calorie": 0,
+	"protein": 0,
+	"carbs":   0,
+	"fats":    0,
 }
 
 // SetMacros takes strings from form data, converts them to floats and sets the macros of StatsGet
 func (s *StatsGet) SetMacros(r *http.Request) {
-	values := make(map[string]float32, 4)
-
-	for _, macro := range macros {
+	for macro, _ := range macros {
 		value, err := strconv.ParseFloat(r.Form.Get(macro), 32)
 		if err != nil {
+			macros[macro] = 0
 			log.Println(err)
 			continue
 		}
-		values[macro] = float32(value)
+		macros[macro] = float32(value)
 	}
 
-	s.Calories = values["calorie"]
-	s.Protein = values["protein"]
-	s.Carbs = values["carbs"]
-	s.Fats = values["fats"]
+	s.Calories = macros["calorie"]
+	s.Protein = macros["protein"]
+	s.Carbs = macros["carbs"]
+	s.Fats = macros["fats"]
 }

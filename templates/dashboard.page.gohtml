@@ -51,10 +51,6 @@
     <script src="/static/js/chart.js"></script>
     <script src="/static/js/sweetalert2@11.js"></script>
     <script>
-        function ParseFloatPrecise(str) {
-          return Number(parseFloat(str).toFixed(2));
-        }
-
         let current_date = new Date();
         let dd = String(current_date.getDate()).padStart(2, '0');
         let mm = String(current_date.getMonth() + 1).padStart(2, '0');
@@ -216,10 +212,12 @@
                 ],
                 datasets: [{
                     label: 'Calories',
-                    data: [stat_cache.get(current_date).breakfast,
+                    data: [
+                        stat_cache.get(current_date).breakfast,
                         stat_cache.get(current_date).lunch,
                         stat_cache.get(current_date).dinner,
-                        stat_cache.get(current_date).snacks],
+                        stat_cache.get(current_date).snacks
+                    ],
                     backgroundColor: [
                         'rgb(255, 99, 132)',
                         'rgb(54, 162, 235)',
@@ -270,7 +268,7 @@
                     document.getElementById('current_date').innerHTML = current_date;
                     if (stat_cache.has(current_date)){
                         update_stats(stat_cache.get(current_date));
-                    }else{
+                    } else {
                         let dateJSON = {
                             "date": current_date,
                             "csrf_token": csrf_token,
@@ -281,13 +279,13 @@
                         })
                             .then(response => response.json())
                             .then(data => stat_cache.set(current_date, {
-                                breakfast: data.breakfast,
-                                lunch: data.lunch,
-                                dinner: data.dinner,
-                                snacks: data.snacks,
-                                protein: data.protein,
-                                carbs: data.carbs,
-                                fats: data.fats,
+                                breakfast: ParseFloatPrecise(data.breakfast),
+                                lunch: ParseFloatPrecise(data.lunch),
+                                dinner: ParseFloatPrecise(data.dinner),
+                                snacks: ParseFloatPrecise(data.snacks),
+                                protein: ParseFloatPrecise(data.protein),
+                                carbs: ParseFloatPrecise(data.carbs),
+                                fats: ParseFloatPrecise(data.fats),
                             }));
                         console.log(stat_cache.get(current_date));
                         update_stats(stat_cache.get(current_date));
@@ -297,7 +295,6 @@
                 }
             })
         }
-
 
     </script>
 {{end}}

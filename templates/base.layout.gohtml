@@ -57,13 +57,14 @@
     <script src="/static/js/popper.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/script.js"></script>
-    <script>
-        let attention = Prompt();
-    </script>
 {{block "js" .}}
 
 {{end}}
     <script>
+
+        {{with $success:=.Success}}
+            attention.success({title: {{$success}}});
+        {{end}}
 
         {{with $flash:=.Flash}}
             attention.toast({icon: "success", msg : {{$flash}}})

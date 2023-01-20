@@ -103,3 +103,9 @@ function Prompt(){
         custom: custom,
     }
 }
+
+function ParseFloatPrecise(str) {
+    return Number(parseFloat(str).toFixed(2));
+}
+
+const attention = Prompt();

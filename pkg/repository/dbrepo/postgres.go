@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -100,6 +99,7 @@ func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 		log.Println("Something wrong with getting stats:", err)
 		return &statsSend
 	}
+
 	err := row.Scan(
 		&statsSend.Breakfast,
 		&statsSend.Lunch,
@@ -109,7 +109,10 @@ func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 		&statsSend.Carbs,
 		&statsSend.Fats,
 	)
-	helpers.ErrorCheck(err)
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	return &statsSend
 }
