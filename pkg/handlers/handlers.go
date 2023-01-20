@@ -57,20 +57,8 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
-	stats, err := json.Marshal(statsSend)
-	if err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-
-	statsMap := make(map[string]float32)
-	if err = json.Unmarshal(stats, &statsMap); err != nil {
-		helpers.ServerError(w, err)
-		return
-	}
-
 	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
-		FloatMap: statsMap,
+		Stats: statsSend,
 	})
 }
 
@@ -83,21 +71,13 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 
 	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
 
-	macros := models.Macros{
-		Request:   r,
-		Precision: 2,
-		BitSize:   32,
-	}
-
 	stats := models.StatsGet{
 		TimeOfDay: r.Form.Get("time_of_day"),
 		Date:      r.Form.Get("desired_date"),
-		Calories:  macros.GetMacro("calorie"),
-		Protein:   macros.GetMacro("protein"),
-		Carbs:     macros.GetMacro("carbs"),
-		Fats:      macros.GetMacro("fats"),
 		UserID:    userID,
 	}
+	stats.SetMacros(r)
+
 	// If there's an error, row doesn't exist so making a new one, else update the row
 	if err = m.DB.CheckStats(stats.Date, userID); err == nil {
 		err = m.DB.UpdateStats(&stats)

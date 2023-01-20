@@ -39,6 +39,7 @@ func main() {
 
 func run() (*driver.DB, error) {
 	var err error
+
 	dbHost := flag.String("dbhost", "localhost", "Database host")
 	dbPort := flag.String("dbport", "5432", "Database port number")
 	dbName := flag.String("dbname", "", "Database name")

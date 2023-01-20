@@ -51,6 +51,10 @@
     <script src="/static/js/chart.js"></script>
     <script src="/static/js/sweetalert2@11.js"></script>
     <script>
+        function ParseFloatPrecise(str) {
+          return Number(parseFloat(str).toFixed(2));
+        }
+
         let current_date = new Date();
         let dd = String(current_date.getDate()).padStart(2, '0');
         let mm = String(current_date.getMonth() + 1).padStart(2, '0');
@@ -61,13 +65,15 @@
 
         let stat_cache = new Map([
             [current_date, {
-                breakfast: parseFloat({{index .FloatMap "breakfast"}}),
-                lunch: parseFloat({{index .FloatMap "lunch"}}),
-                dinner: parseFloat({{index .FloatMap "dinner"}}),
-                snacks: parseFloat({{index .FloatMap "snacks"}}),
-                protein: parseFloat({{index .FloatMap "protein"}}),
-                carbs: parseFloat({{index .FloatMap "carbs"}}),
-                fats: parseFloat({{index .FloatMap "fats"}}),
+                {{with .Stats}}
+                    breakfast: ParseFloatPrecise({{.Breakfast}}),
+                    lunch: ParseFloatPrecise({{.Lunch}}),
+                    dinner: ParseFloatPrecise({{.Dinner}}),
+                    snacks: ParseFloatPrecise({{.Snacks}}),
+                    protein: ParseFloatPrecise({{.Protein}}),
+                    carbs: ParseFloatPrecise({{.Carbs}}),
+                    fats: ParseFloatPrecise({{.Fats}}),
+                {{end}}
             }]
         ]);
 
@@ -105,10 +111,10 @@
 
 
         function real_time_update(result){
-            let given_cals = parseInt(result[2]);
-            let given_protein = parseInt(result[3]);
-            let given_carbs = parseInt(result[4]);
-            let given_fats = parseInt(result[5]);
+            let given_cals = ParseFloatPrecise(result[2]);
+            let given_protein = ParseFloatPrecise(result[3]);
+            let given_carbs = ParseFloatPrecise(result[4]);
+            let given_fats = ParseFloatPrecise(result[5]);
             let given_date = result[0];
 
             if (stat_cache.has(given_date)){

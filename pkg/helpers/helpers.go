@@ -13,10 +13,10 @@ func NewHelpers(a *config.AppConfig) {
 	app = a
 }
 
-func ClientError(w http.ResponseWriter, status int) {
-	app.InfoLog.Println("Client error with status:", status)
-	http.Error(w, http.StatusText(status), status)
-}
+//func ClientError(w http.ResponseWriter, status int) {
+//	app.InfoLog.Println("Client error with status:", status)
+//	http.Error(w, http.StatusText(status), status)
+//}
 
 func ServerError(w http.ResponseWriter, err error) {
 	app.ErrorLog.Printf("%s\n%s\n", err.Error(), debug.Stack())

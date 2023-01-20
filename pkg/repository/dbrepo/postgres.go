@@ -127,11 +127,11 @@ func (m *postgresDBRepo) CheckStats(date string, userID uint) error {
 }
 
 func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
 	var id uint
 	var hashedPassword string
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	row := m.DB.QueryRowContext(ctx, "select id, password from users where username = $1", username)
 
@@ -141,7 +141,6 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, str
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
-
 	if err != nil {
 		return 0, "", err
 	}
@@ -150,6 +149,8 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, str
 }
 
 func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
+	var user models.User
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -158,7 +159,6 @@ func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
 
 	row := m.DB.QueryRowContext(ctx, query, id)
 
-	var user models.User
 	err := row.Scan(
 		&user.ID,
 		&user.Username,
