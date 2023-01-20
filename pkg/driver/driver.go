@@ -29,10 +29,10 @@ func ConnectDB(dsn string) *DB {
 	dbPool.SetMaxOpenConns(maxOpenDBConn)
 	dbPool.SetConnMaxIdleTime(maxIdleDBConn)
 	dbPool.SetConnMaxLifetime(maxDBLifetime)
-	dbConn := &DB{
+
+	return &DB{
 		SQL: dbPool,
 	}
-	return dbConn
 }
 
 // NewDB creates a new database for app
