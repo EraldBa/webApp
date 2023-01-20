@@ -46,30 +46,31 @@ func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	userID := m.App.Session.GetInt(r.Context(), "user_id")
 	isLoggedIn := helpers.IsAuthenticated(r)
-
 	if !isLoggedIn {
 		m.App.Session.Put(r.Context(), "error", "You're not logged in, please log in to view your stats!")
 		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
 
+	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
-	floatMap := map[string]float32{
-		"breakfast": statsSend.Breakfast,
-		"lunch":     statsSend.Lunch,
-		"dinner":    statsSend.Dinner,
-		"snacks":    statsSend.Snacks,
-		"protein":   statsSend.Protein,
-		"carbs":     statsSend.Carbs,
-		"fats":      statsSend.Fats,
+	stats, err := json.Marshal(statsSend)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	statsMap := make(map[string]float32)
+	if err = json.Unmarshal(stats, &statsMap); err != nil {
+		helpers.ServerError(w, err)
+		return
 	}
 
 	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
-		FloatMap: floatMap,
+		FloatMap: statsMap,
 	})
 }
 
@@ -80,7 +81,7 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID := m.App.Session.GetInt(r.Context(), "user_id")
+	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
 
 	macros := models.Macros{
 		Request:   r,
@@ -121,7 +122,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 		_, _ = w.Write([]byte("Error 400. Server refused Connection"))
 		return
 	}
-	userID := m.App.Session.GetInt(r.Context(), "user_id")
+	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
 
 	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
 
@@ -148,7 +149,8 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := m.DB.InsertUser(&signupData); err != nil {
-		helpers.ClientError(w, http.StatusInternalServerError)
+		m.App.Session.Put(r.Context(), "error", "Username and/or email are already taken!")
+		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
 

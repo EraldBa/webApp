@@ -3,7 +3,6 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
@@ -86,7 +85,7 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 }
 
 // GetStats returns stats of a user of a particular date
-func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
+func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 	var statsSend models.StatsSend
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -116,7 +115,7 @@ func (m *postgresDBRepo) GetStats(date string, userID int) *models.StatsSend {
 }
 
 // CheckStats checks if stats row exists
-func (m *postgresDBRepo) CheckStats(date string, userID int) error {
+func (m *postgresDBRepo) CheckStats(date string, userID uint) error {
 	var test []byte
 	query := `select * from stats where user_id = $1 and date = $2`
 
@@ -127,11 +126,11 @@ func (m *postgresDBRepo) CheckStats(date string, userID int) error {
 	return err
 }
 
-func (m *postgresDBRepo) Authenticator(username, testPassword string) (int, string, error) {
+func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var id int
+	var id uint
 	var hashedPassword string
 
 	row := m.DB.QueryRowContext(ctx, "select id, password from users where username = $1", username)
@@ -143,16 +142,14 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (int, stri
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
 
-	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return 0, "", errors.New("incorrect password")
-	} else if err != nil {
+	if err != nil {
 		return 0, "", err
 	}
 
 	return id, hashedPassword, nil
 }
 
-func (m *postgresDBRepo) GetUserById(id int) (*models.User, error) {
+func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 

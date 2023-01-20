@@ -19,8 +19,6 @@ type DB struct {
 	SQL *sql.DB
 }
 
-var dbConn = &DB{}
-
 // ConnectDB creates connection pool for Postgres
 func ConnectDB(dsn string) *DB {
 	dbPool, err := NewDB(dsn)
@@ -30,8 +28,9 @@ func ConnectDB(dsn string) *DB {
 	dbPool.SetMaxOpenConns(maxOpenDBConn)
 	dbPool.SetConnMaxIdleTime(maxIdleDBConn)
 	dbPool.SetConnMaxLifetime(maxDBLifetime)
-
-	dbConn.SQL = dbPool
+	dbConn := &DB{
+		SQL: dbPool,
+	}
 	return dbConn
 }
 

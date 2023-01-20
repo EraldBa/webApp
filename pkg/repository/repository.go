@@ -6,8 +6,8 @@ type DatabaseRepo interface {
 	InsertUser(u *models.User) error
 	InsertNewStats(s *models.StatsGet) error
 	UpdateStats(s *models.StatsGet) error
-	GetStats(date string, userID int) *models.StatsSend
-	CheckStats(date string, userID int) error
-	Authenticator(username, testPassword string) (int, string, error)
-	GetUserById(id int) (*models.User, error)
+	GetStats(date string, userID uint) *models.StatsSend
+	CheckStats(date string, userID uint) error
+	Authenticator(username, testPassword string) (uint, string, error)
+	GetUserById(id uint) (*models.User, error)
 }

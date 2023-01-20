@@ -4,7 +4,7 @@ import "net/http"
 
 // User holds the users info
 type User struct {
-	ID          int
+	ID          uint
 	Username    string
 	Email       string
 	Password    string
@@ -22,7 +22,7 @@ type StatsGet struct {
 	Protein   float32
 	Carbs     float32
 	Fats      float32
-	UserID    int
+	UserID    uint
 }
 
 // StatsSend holds the info that needs to be sent to frontend user
