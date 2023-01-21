@@ -3,10 +3,10 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/EraldBa/webApp/pkg/models"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"time"
 )
 
@@ -20,14 +20,13 @@ func (m *postgresDBRepo) InsertUser(user *models.User) error {
 		return err
 	}
 	stmt := `insert into users 
-    			(username, email, password, access_level, created_at, updated_at)
-				values ($1, $2, $3, $4, $5, $6)`
+    			(username, email, password, created_at, updated_at)
+				values ($1, $2, $3, $4, $5)`
 
 	_, err = m.DB.ExecContext(ctx, stmt,
 		user.Username,
 		user.Email,
 		hashedPassword,
-		user.AccessLevel,
 		time.Now(),
 		time.Now(),
 	)
@@ -96,7 +95,7 @@ func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 	row := m.DB.QueryRowContext(ctx, query, userID, date)
 
 	if err := row.Err(); err != nil {
-		log.Println("Something wrong with getting stats:", err)
+		m.App.ErrorLog.Println("Something wrong with getting stats:", err)
 		return &statsSend
 	}
 
@@ -110,26 +109,26 @@ func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 		&statsSend.Fats,
 	)
 
-	if err != nil {
-		log.Println(err)
+	noRows := errors.Is(err, sql.ErrNoRows)
+	if err != nil && !noRows {
+		m.App.ErrorLog.Println("Problem with scanning user stats:", err)
 	}
 
 	return &statsSend
 }
 
 // CheckStats checks if stats row exists
-func (m *postgresDBRepo) CheckStats(date string, userID uint) error {
-	var test []byte
-	query := `select * from stats where user_id = $1 and date = $2`
+func (m *postgresDBRepo) CheckStats(date string, userID uint) bool {
+	var test uint
+
+	query := `select id from stats where user_id = $1 and date = $2`
 
 	err := m.DB.QueryRow(query, userID, date).Scan(&test)
-	if err != sql.ErrNoRows {
-		return nil
-	}
-	return err
+
+	return errors.Is(err, sql.ErrNoRows)
 }
 
-func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, string, error) {
+func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, error) {
 	var id uint
 	var hashedPassword string
 
@@ -140,35 +139,36 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, str
 
 	err := row.Scan(&id, &hashedPassword)
 	if err != nil {
-		return id, "", err
+		return id, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
 	if err != nil {
-		return 0, "", err
+		return 0, err
 	}
 
-	return id, hashedPassword, nil
+	return id, nil
 }
 
-func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
-	var user models.User
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	query := `select id, username, password, access_level, created_at, updated_at
-			from users where id = $1`
-
-	row := m.DB.QueryRowContext(ctx, query, id)
-
-	err := row.Scan(
-		&user.ID,
-		&user.Username,
-		&user.Password,
-		&user.AccessLevel,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-	return &user, err
-}
+// Not needed, might need later
+//func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
+//	var user models.User
+//
+//	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+//	defer cancel()
+//
+//	query := `select id, username, password, access_level, created_at, updated_at
+//			from users where id = $1`
+//
+//	row := m.DB.QueryRowContext(ctx, query, id)
+//
+//	err := row.Scan(
+//		&user.ID,
+//		&user.Username,
+//		&user.Password,
+//		&user.AccessLevel,
+//		&user.CreatedAt,
+//		&user.UpdatedAt,
+//	)
+//	return &user, err
+//}

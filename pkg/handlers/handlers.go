@@ -79,11 +79,11 @@ func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request
 	}
 	stats.SetMacros(r)
 
-	// If there's an error, row doesn't exist so making a new one, else update the row
-	if err = m.DB.CheckStats(stats.Date, userID); err == nil {
-		err = m.DB.UpdateStats(&stats)
-	} else {
+	noRows := m.DB.CheckStats(stats.Date, userID)
+	if noRows {
 		err = m.DB.InsertNewStats(&stats)
+	} else {
+		err = m.DB.UpdateStats(&stats)
 	}
 
 	if err != nil {
@@ -98,7 +98,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 		helpers.ServerError(w, err)
 		return
 	}
-	// Checking if token sent in json is valid
+
 	csrfIsValid := nosurf.VerifyToken(nosurf.Token(r), receivedJSON.CSRFToken)
 	if !csrfIsValid {
 		helpers.ClientError(w, http.StatusBadRequest)
@@ -107,6 +107,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 
 	userID := m.App.Session.Get(r.Context(), "user_id").(uint)
 	statsSend := m.DB.GetStats(receivedJSON.Date, userID)
+
 	statsSendJSON, err := json.Marshal(statsSend)
 	if err != nil {
 		helpers.ServerError(w, err)
@@ -129,10 +130,9 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	signupData := models.User{
-		Username:    r.Form.Get("username"),
-		Email:       r.Form.Get("email"),
-		Password:    r.Form.Get("password"),
-		AccessLevel: 1,
+		Username: r.Form.Get("username"),
+		Email:    r.Form.Get("email"),
+		Password: r.Form.Get("password"),
 	}
 
 	if err := m.DB.InsertUser(&signupData); err != nil {
@@ -141,7 +141,8 @@ func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	m.App.Session.Put(r.Context(), "new_user", true)
-	m.PostLogInHandler(w, r)
+
+	http.Redirect(w, r, "/logged-in", http.StatusTemporaryRedirect)
 }
 
 func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
@@ -158,14 +159,15 @@ func (m *Repository) PostLogInHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
-	id, _, err := m.DB.Authenticator(username, password)
+
+	id, err := m.DB.Authenticator(username, password)
 	if err != nil {
 		m.App.Session.Put(r.Context(), "error", "Wrong credentials. Try again.")
 		http.Redirect(w, r, "/member", http.StatusSeeOther)
 		return
 	}
 
-	newUser := m.App.Session.GetBool(r.Context(), "new_user")
+	newUser := m.App.Session.PopBool(r.Context(), "new_user")
 	if newUser {
 		msgKey = "success"
 		msg = fmt.Sprintf("Welcome to FitBuddy %s!", username)

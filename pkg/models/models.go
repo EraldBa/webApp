@@ -2,13 +2,10 @@ package models
 
 // User holds the users info
 type User struct {
-	ID          uint
-	Username    string
-	Email       string
-	Password    string
-	AccessLevel uint8
-	CreatedAt   string
-	UpdatedAt   string
+	ID       uint
+	Username string
+	Email    string
+	Password string
 }
 
 // StatsGet is the stats info that the backend needs

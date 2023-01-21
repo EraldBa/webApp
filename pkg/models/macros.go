@@ -1,32 +1,28 @@
 package models
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 )
 
-var macros = map[string]float32{
-	"calorie": 0,
-	"protein": 0,
-	"carbs":   0,
-	"fats":    0,
+var macros = [4]string{
+	"calorie",
+	"protein",
+	"carbs",
+	"fats",
 }
 
 // SetMacros takes strings from form data, converts them to floats and sets the macros of StatsGet
 func (s *StatsGet) SetMacros(r *http.Request) {
-	for macro, _ := range macros {
-		value, err := strconv.ParseFloat(r.Form.Get(macro), 32)
-		if err != nil {
-			macros[macro] = 0
-			log.Println(err)
-			continue
-		}
-		macros[macro] = float32(value)
+	values := make(map[string]float32, 4)
+
+	for _, macro := range macros {
+		value, _ := strconv.ParseFloat(r.Form.Get(macro), 32)
+		values[macro] = float32(value)
 	}
 
-	s.Calories = macros["calorie"]
-	s.Protein = macros["protein"]
-	s.Carbs = macros["carbs"]
-	s.Fats = macros["fats"]
+	s.Calories = values["calorie"]
+	s.Protein = values["protein"]
+	s.Carbs = values["carbs"]
+	s.Fats = values["fats"]
 }

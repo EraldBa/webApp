@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"net/http"
 )
 
-func routes(app *config.AppConfig) http.Handler {
+func routes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)

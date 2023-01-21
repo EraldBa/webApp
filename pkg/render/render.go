@@ -6,7 +6,6 @@ import (
 	"github.com/EraldBa/webApp/pkg/models"
 	"github.com/justinas/nosurf"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 )
@@ -38,14 +37,14 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.Te
 	} else {
 		tmplCache, err = CreateTemplateCache()
 		if err != nil {
-			log.Fatal(err)
+			app.ErrorLog.Fatal(err)
 		}
 	}
 
 	// get requested template from cache
 	t, ok := tmplCache[tmpl]
 	if !ok {
-		log.Fatal("Templates not accessible")
+		app.ErrorLog.Fatal("Templates not accessible")
 	}
 	// for extra security
 	buf := new(bytes.Buffer)
@@ -55,7 +54,7 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.Te
 	_ = t.Execute(buf, td)
 
 	if _, err := buf.WriteTo(w); err != nil {
-		log.Println(err)
+		app.ErrorLog.Println(err)
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/EraldBa/webApp/pkg/config"
@@ -22,25 +23,34 @@ var app config.AppConfig
 func main() {
 	db, err := run()
 	if err != nil {
-		log.Fatal(err)
+		app.ErrorLog.Fatal("Failed to establish connection to database:", err)
 	}
-
-	defer db.SQL.Close()
+	// Closing db connection whenever program stops execution
+	defer func(SQL *sql.DB) {
+		err = SQL.Close()
+		if err != nil {
+			app.ErrorLog.Fatal("Couldn't close connection with database:", err)
+		}
+	}(db.SQL)
 
 	srv := http.Server{
 		Addr:    portNumber,
-		Handler: routes(&app),
+		Handler: routes(),
 	}
-	log.Println("Listening on port", portNumber)
+	app.InfoLog.Println("Listening on port", portNumber)
 
 	err = srv.ListenAndServe()
 
-	log.Fatal(err)
+	app.ErrorLog.Fatal(err)
 
 }
 
 func run() (*driver.DB, error) {
 	var err error
+
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	dbHost := flag.String("dbhost", "localhost", "Database host")
 	dbPort := flag.String("dbport", "5432", "Database port number")
@@ -54,17 +64,13 @@ func run() (*driver.DB, error) {
 	flag.Parse()
 
 	if *dbName == "" || *dbUser == "" {
-		log.Fatal("Missing required fields: dbname and/or dbuser.")
+		app.ErrorLog.Fatal("Missing required fields: dbname / dbuser.")
 	}
 	// dsn is the database connection info\
 	dsn := "host=%s port=%s dbname=%s user=%s password=%s sslmode=%s"
 	dsn = fmt.Sprintf(dsn, *dbHost, *dbPort, *dbName, *dbUser, *dbPassword, *dbSSL)
 	// Set to true if in production, for now it's false
 	app.InProduction = *inProduction
-
-	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-
-	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// Initializing session
 	app.Session = scs.New()
@@ -84,9 +90,9 @@ func run() (*driver.DB, error) {
 	}
 	app.UseCache = *useCache
 
-	log.Println("Connecting to database...")
+	app.InfoLog.Println("Connecting to database...")
 	db := driver.ConnectDB(dsn)
-	log.Println("Connected to database!")
+	app.InfoLog.Println("Connected to database!")
 
 	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
