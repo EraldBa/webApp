@@ -3,6 +3,7 @@ package render
 import (
 	"bytes"
 	"github.com/EraldBa/webApp/pkg/config"
+	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
 	"github.com/justinas/nosurf"
 	"html/template"
@@ -21,7 +22,7 @@ func AddDefaultData(r *http.Request, tmplData *models.TemplateData) {
 	tmplData.Success = app.Session.PopString(r.Context(), "success")
 	tmplData.Error = app.Session.PopString(r.Context(), "error")
 	tmplData.Flash = app.Session.PopString(r.Context(), "flash")
-	tmplData.IsAuthenticated = app.Session.Exists(r.Context(), "user_id")
+	tmplData.IsAuthenticated = helpers.IsAuthenticated(r)
 }
 
 func Template(w http.ResponseWriter, r *http.Request, tmplName string, tmplData *models.TemplateData) {
