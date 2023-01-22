@@ -29,8 +29,9 @@ func AddDefaultData(r *http.Request, td *models.TemplateData) *models.TemplateDa
 }
 
 func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
-	var tmplCache = map[string]*template.Template{}
 	var err error
+	var tmplCache map[string]*template.Template
+
 	if app.UseCache {
 		// get template cache from app config
 		tmplCache = app.TemplateCache
