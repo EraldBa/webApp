@@ -38,12 +38,12 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "home.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "home.page.gohtml", new(models.TemplateData))
 }
 
 // AboutHandler handles /about requests
 func (m *Repository) AboutHandler(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "about.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "about.page.gohtml", new(models.TemplateData))
 }
 
 func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,9 +58,7 @@ func (m *Repository) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	currentDate := time.Now().Format("2006-01-02")
 	statsSend := m.DB.GetStats(currentDate, userID)
 
-	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{
-		Stats: statsSend,
-	})
+	render.Template(w, r, "dashboard.page.gohtml", &models.TemplateData{Stats: statsSend})
 }
 
 func (m *Repository) PostDashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +99,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 
 	csrfIsValid := nosurf.VerifyToken(nosurf.Token(r), receivedJSON.CSRFToken)
 	if !csrfIsValid {
-		helpers.ClientError(w, http.StatusBadRequest)
+		helpers.ClientError(w, http.StatusForbidden)
 		return
 	}
 
@@ -119,7 +117,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (m *Repository) MemberHandler(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "member.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "member.page.gohtml", new(models.TemplateData))
 }
 
 func (m *Repository) PostSignUpHandler(w http.ResponseWriter, r *http.Request) {
@@ -200,5 +198,5 @@ func (m *Repository) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) ContactHandler(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "contact.page.gohtml", &models.TemplateData{})
+	render.Template(w, r, "contact.page.gohtml", new(models.TemplateData))
 }

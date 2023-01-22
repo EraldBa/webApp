@@ -7,5 +7,5 @@ type TemplateData struct {
 	Success         string
 	Error           string
 	Flash           string
-	IsAuthenticated int
+	IsAuthenticated bool
 }

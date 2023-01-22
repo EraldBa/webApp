@@ -37,7 +37,7 @@ ALTER TABLE public.schema_migration OWNER TO erald;
 
 CREATE TABLE public.stats (
     id integer NOT NULL,
-    date timestamp with time zone NOT NULL,
+    date date NOT NULL,
     breakfast real DEFAULT '0'::real NOT NULL,
     lunch real DEFAULT '0'::real NOT NULL,
     dinner real DEFAULT '0'::real NOT NULL,

@@ -35,7 +35,7 @@
                             Member Options
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            {{if eq .IsAuthenticated 1}}
+                            {{if .IsAuthenticated}}
                                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
                                 <li><a class="dropdown-item" href="/dashboard">Start Tracking</a></li>
                             {{else}}

@@ -84,19 +84,19 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 
 // GetStats returns stats of a user of a particular date
 func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
-	var statsSend models.StatsSend
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	query := `select breakfast, lunch, dinner, snacks, protein, carbs, fats
 				from stats
 				where user_id = $1 and date = $2`
-	row := m.DB.QueryRowContext(ctx, query, userID, date)
 
-	if err := row.Err(); err != nil {
-		m.App.ErrorLog.Println("Something wrong with getting stats:", err)
-		return &statsSend
+	row := m.DB.QueryRowContext(ctx, query, userID, date)
+	statsSend := new(models.StatsSend)
+
+	if row.Err() != nil {
+		m.App.ErrorLog.Println("Something wrong with executing query:", row.Err())
+		return statsSend
 	}
 
 	err := row.Scan(
@@ -109,12 +109,11 @@ func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
 		&statsSend.Fats,
 	)
 
-	noRows := errors.Is(err, sql.ErrNoRows)
-	if err != nil && !noRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		m.App.ErrorLog.Println("Problem with scanning user stats:", err)
 	}
 
-	return &statsSend
+	return statsSend
 }
 
 // CheckStats checks if stats row exists
@@ -152,15 +151,14 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, err
 
 // Not needed, might need later
 //func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
-//	var user models.User
-//
-//	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 //	defer cancel()
 //
 //	query := `select id, username, password, access_level, created_at, updated_at
 //			from users where id = $1`
 //
 //	row := m.DB.QueryRowContext(ctx, query, id)
+//	user := new(models.User)
 //
 //	err := row.Scan(
 //		&user.ID,
@@ -170,5 +168,5 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, err
 //		&user.CreatedAt,
 //		&user.UpdatedAt,
 //	)
-//	return &user, err
+//	return user, err
 //}

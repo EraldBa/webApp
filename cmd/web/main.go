@@ -23,7 +23,7 @@ var app config.AppConfig
 func main() {
 	db, err := run()
 	if err != nil {
-		app.ErrorLog.Fatal("Failed to establish connection to database:", err)
+		app.ErrorLog.Fatal("Failed to start application:", err)
 	}
 	// Closing db connection whenever program stops execution
 	defer func(SQL *sql.DB) {
@@ -98,6 +98,6 @@ func run() (*driver.DB, error) {
 	handlers.NewHandlers(repo)
 	helpers.NewHelpers(&app)
 	// Passing app config to render package
-	render.NewRenderer(&app)
+	render.NewRendererConf(&app)
 	return db, nil
 }

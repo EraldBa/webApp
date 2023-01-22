@@ -12,25 +12,21 @@ import (
 
 var app *config.AppConfig
 
-func NewRenderer(a *config.AppConfig) {
+func NewRendererConf(a *config.AppConfig) {
 	app = a
 }
 
-func AddDefaultData(r *http.Request, td *models.TemplateData) *models.TemplateData {
-	td.CSRFToken = nosurf.Token(r)
-	td.Success = app.Session.PopString(r.Context(), "success")
-	td.Error = app.Session.PopString(r.Context(), "error")
-	td.Flash = app.Session.PopString(r.Context(), "flash")
-	if app.Session.Exists(r.Context(), "user_id") {
-		td.IsAuthenticated = 1
-	}
-
-	return td
+func AddDefaultData(r *http.Request, tmplData *models.TemplateData) {
+	tmplData.CSRFToken = nosurf.Token(r)
+	tmplData.Success = app.Session.PopString(r.Context(), "success")
+	tmplData.Error = app.Session.PopString(r.Context(), "error")
+	tmplData.Flash = app.Session.PopString(r.Context(), "flash")
+	tmplData.IsAuthenticated = app.Session.Exists(r.Context(), "user_id")
 }
 
-func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
-	var err error
+func Template(w http.ResponseWriter, r *http.Request, tmplName string, tmplData *models.TemplateData) {
 	var tmplCache map[string]*template.Template
+	var err error
 
 	if app.UseCache {
 		// get template cache from app config
@@ -43,49 +39,46 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.Te
 	}
 
 	// get requested template from cache
-	t, ok := tmplCache[tmpl]
+	tmpl, ok := tmplCache[tmplName]
 	if !ok {
 		app.ErrorLog.Fatal("Templates not accessible")
 	}
-	// for extra security
+
 	buf := new(bytes.Buffer)
 
-	td = AddDefaultData(r, td)
+	AddDefaultData(r, tmplData)
 	// rendering template
-	_ = t.Execute(buf, td)
+	if err = tmpl.Execute(buf, tmplData); err != nil {
+		app.ErrorLog.Println("Problem with rendering template:", err)
+	}
 
-	if _, err := buf.WriteTo(w); err != nil {
+	if _, err = buf.WriteTo(w); err != nil {
 		app.ErrorLog.Println(err)
 	}
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
-	tc := map[string]*template.Template{}
+	tmplCache := make(map[string]*template.Template)
 	// Get all names of page templates from ./templates
-	pages, err := filepath.Glob("./templates/*page.gohtml")
+	pages, err := filepath.Glob("./templates/*.page.gohtml")
 	if err != nil {
-		return tc, err
+		return tmplCache, err
 	}
-	// Get only base name of template (/templates/home.page.gohtml -> home.page.gohtml)
+
 	for _, page := range pages {
-		name := filepath.Base(page)
-		ts, err := template.New(name).ParseFiles(page)
+		// Get only base name of template (/templates/home.page.gohtml -> home.page.gohtml)
+		tmplName := filepath.Base(page)
+		tmpl, err := template.New(tmplName).ParseFiles(page)
 		if err != nil {
-			return tc, err
+			return tmplCache, err
 		}
-		// Get all names of layout templates from ./templates
-		matches, err := filepath.Glob("./templates/*layout.gohtml")
+		// Parsing all layout files to tmpl
+		tmpl, err = tmpl.ParseGlob("./templates/*.layout.gohtml")
 		if err != nil {
-			return tc, err
+			return tmplCache, err
 		}
 
-		if len(matches) > 0 {
-			ts, err = ts.ParseGlob("./templates/*.layout.gohtml")
-			if err != nil {
-				return tc, err
-			}
-		}
-		tc[name] = ts
+		tmplCache[tmplName] = tmpl
 	}
-	return tc, nil
+	return tmplCache, nil
 }
