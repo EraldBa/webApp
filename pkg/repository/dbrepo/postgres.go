@@ -10,9 +10,11 @@ import (
 	"time"
 )
 
+const dbConnTimeout = 3 * time.Second
+
 // InsertUser inserts new user to database
 func (m *postgresDBRepo) InsertUser(user *models.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnTimeout)
 	defer cancel()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
@@ -35,7 +37,7 @@ func (m *postgresDBRepo) InsertUser(user *models.User) error {
 
 // InsertNewStats inserts new stats row to database for a user
 func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnTimeout)
 	defer cancel()
 
 	stmt := `insert into stats 
@@ -60,7 +62,7 @@ func (m *postgresDBRepo) InsertNewStats(s *models.StatsGet) error {
 
 // UpdateStats updates the users stats according to date, row has to already exist
 func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnTimeout)
 	defer cancel()
 
 	stmt := `update stats
@@ -84,7 +86,7 @@ func (m *postgresDBRepo) UpdateStats(s *models.StatsGet) error {
 
 // GetStats returns stats of a user of a particular date
 func (m *postgresDBRepo) GetStats(date string, userID uint) *models.StatsSend {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnTimeout)
 	defer cancel()
 
 	query := `select breakfast, lunch, dinner, snacks, protein, carbs, fats
@@ -131,7 +133,7 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, err
 	var id uint
 	var hashedPassword string
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnTimeout)
 	defer cancel()
 
 	row := m.DB.QueryRowContext(ctx, "select id, password from users where username = $1", username)
@@ -148,25 +150,3 @@ func (m *postgresDBRepo) Authenticator(username, testPassword string) (uint, err
 
 	return id, nil
 }
-
-// Not needed, might need later
-//func (m *postgresDBRepo) GetUserById(id uint) (*models.User, error) {
-// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-//	defer cancel()
-//
-//	query := `select id, username, password, access_level, created_at, updated_at
-//			from users where id = $1`
-//
-//	row := m.DB.QueryRowContext(ctx, query, id)
-//	user := new(models.User)
-//
-//	err := row.Scan(
-//		&user.ID,
-//		&user.Username,
-//		&user.Password,
-//		&user.AccessLevel,
-//		&user.CreatedAt,
-//		&user.UpdatedAt,
-//	)
-//	return user, err
-//}
