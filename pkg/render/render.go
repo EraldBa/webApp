@@ -1,7 +1,6 @@
 package render
 
 import (
-	"bytes"
 	"github.com/EraldBa/webApp/pkg/config"
 	"github.com/EraldBa/webApp/pkg/helpers"
 	"github.com/EraldBa/webApp/pkg/models"
@@ -45,17 +44,12 @@ func Template(w http.ResponseWriter, r *http.Request, tmplName string, tmplData 
 		app.ErrorLog.Fatal("Templates not accessible")
 	}
 
-	buf := new(bytes.Buffer)
-
 	AddDefaultData(r, tmplData)
-	// rendering template
-	if err = tmpl.Execute(buf, tmplData); err != nil {
+	// Rendering template
+	if err = tmpl.Execute(w, tmplData); err != nil {
 		app.ErrorLog.Println("Problem with rendering template:", err)
 	}
 
-	if _, err = buf.WriteTo(w); err != nil {
-		app.ErrorLog.Println(err)
-	}
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
