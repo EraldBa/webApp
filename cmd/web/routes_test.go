@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/EraldBa/webApp/pkg/config"
-	"github.com/go-chi/chi"
 	"testing"
+
+	"github.com/go-chi/chi"
 )
 
 func TestRoutes(t *testing.T) {
-	var app config.AppConfig
-	mux := routes(&app)
+	mux := routes()
 
 	switch mux.(type) {
 	case *chi.Mux:
