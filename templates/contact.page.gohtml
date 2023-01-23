@@ -3,15 +3,29 @@
 {{define "css"}}
     <title>About</title>
     <style>
-        .center {
+        .iframe {
             display: block;
-            margin-left: auto;
-            margin-right: auto;
+            margin-left: fill;
+            height: 800px;
+            width: 600px;
         }
     </style>
 {{end}}
 
 {{define "content"}}
-    <h1 style="text-align: center">Work In Progress</h1>
-    <img src="/static/images/gopher-hello.gif" class="center">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <iframe class="iframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3144.86282099583!2d23.671608751342934!3d37.98033057962312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1bc9c035c72fd%3A0x5da4e7f89f314b53!2sPublic%20VET%20School%20IEK%20Aigaleo!5e0!3m2!1sen!2sgr!4v1674489211481!5m2!1sen!2sgr"
+                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+                <div class="col">
+                    <h3>Contact us at: Public VET School IEK Aigaleo</h3>
+                    <p>
+                        Address: Μίνωος και Προόδου εισοδος απο, Skra, Egaleo 122 41<br>
+                        Email: admin@admin.com
+                    </p>
+                </div>
+            </div>
+        </div>
 {{end}}
