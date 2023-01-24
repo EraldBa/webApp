@@ -109,6 +109,7 @@ func (m *Repository) PostDashRefreshHandler(w http.ResponseWriter, r *http.Reque
 	statsSendJSON, err := json.Marshal(statsSend)
 	if err != nil {
 		helpers.ServerError(w, err)
+		return
 	}
 
 	if _, err = w.Write(statsSendJSON); err != nil {

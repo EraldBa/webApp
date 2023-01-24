@@ -3,15 +3,26 @@
 {{define "css"}}
      <title>About</title>
      <style>
+          .title {
+               text-align: center;
+               color: #0d6efd;
+          }
          .center {
               display: block;
               margin-left: auto;
               margin-right: auto;
+              color: #6a1a21;
          }
      </style>
+
 {{end}}
 
 {{define "content"}}
-     <h1 style="text-align: center">Work In Progress</h1>
-     <img src="/static/images/gopher-hello.gif" class="center">
+          <div class="title">
+               <h3>A simple web-application project build with the Go programming language</h3><br><br>
+          </div>
+          <div class="center">
+               <img src="/static/images/gopher-hello.gif" class="center" alt="Gopher-Programming-Goes-Here"><br>
+          </div>
+
 {{end}}
