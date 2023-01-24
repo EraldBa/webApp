@@ -1,8 +1,8 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
-	"strconv"
 )
 
 var macros = [4]string{
@@ -14,18 +14,24 @@ var macros = [4]string{
 
 // SetMacros takes strings from form data, converts them to floats and sets the macros of StatsGet
 func (s *StatsGet) SetMacros(r *http.Request) {
+	var value float32
+	var err error
+
 	for _, formField := range macros {
-		value, _ := strconv.ParseFloat(r.Form.Get(formField), 32)
-		value32 := float32(value)
+		_, err = fmt.Sscanf(r.Form.Get(formField), "%f", &value)
+		if err != nil {
+			value = 0
+		}
+
 		switch formField {
 		case "calorie":
-			s.Calories = value32
+			s.Calories = value
 		case "protein":
-			s.Protein = value32
+			s.Protein = value
 		case "carbs":
-			s.Carbs = value32
+			s.Carbs = value
 		case "fats":
-			s.Fats = value32
+			s.Fats = value
 		}
 	}
 }
