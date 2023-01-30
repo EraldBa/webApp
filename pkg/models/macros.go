@@ -14,18 +14,18 @@ var macros = [4]string{
 
 // SetMacros takes strings from form data, converts them to floats and sets the macros of StatsGet
 func (s *StatsGet) SetMacros(r *http.Request) {
-	for _, formField := range macros {
+	for i, formField := range macros {
 		value, _ := strconv.ParseFloat(r.Form.Get(formField), 32)
 		value32 := float32(value)
 
-		switch formField {
-		case "calorie":
+		switch i {
+		case 0:
 			s.Calories = value32
-		case "protein":
+		case 1:
 			s.Protein = value32
-		case "carbs":
+		case 2:
 			s.Carbs = value32
-		case "fats":
+		case 3:
 			s.Fats = value32
 		}
 	}
