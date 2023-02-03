@@ -58,8 +58,8 @@
         document.getElementById('current_date').innerHTML = current_date;
 
 
-        let stat_cache = new Map([
-            [current_date, {
+
+            sessionStorage.setItem(current_date, JSON.stringify({
                 {{with .Stats}}
                     breakfast: ParseFloatPrecise({{.Breakfast}}),
                     lunch: ParseFloatPrecise({{.Lunch}}),
@@ -69,13 +69,13 @@
                     carbs: ParseFloatPrecise({{.Carbs}}),
                     fats: ParseFloatPrecise({{.Fats}}),
                 {{end}}
-            }]
-        ]);
+            }));
 
-        let total_cal = stat_cache.get(current_date).breakfast +
-                        stat_cache.get(current_date).lunch +
-                        stat_cache.get(current_date).dinner +
-                        stat_cache.get(current_date).snacks;
+        let stats = JSON.parse(sessionStorage.getItem(current_date))
+        let total_cal = stats.breakfast +
+                        stats.lunch +
+                        stats.dinner +
+                        stats.snacks;
         document.getElementById('today_total').innerHTML = total_cal.toString();
 
         const csrf_token = "{{.CSRFToken}}";
@@ -112,16 +112,17 @@
             let given_fats = ParseFloatPrecise(result[5]);
             let given_date = result[0];
 
-            if (stat_cache.has(given_date)){
-                let stats = stat_cache.get(given_date);
-                stats[result[1]] += given_cals;
-                stats.protein += given_protein;
-                stats.carbs += given_carbs;
-                stats.fats += given_fats;
+            if (sessionStorage.getItem(given_date) !== null){
+                let real_time_stats = JSON.parse(sessionStorage.getItem(given_date));
+                real_time_stats[result[1]] += given_cals;
+                real_time_stats.protein += given_protein;
+                real_time_stats.carbs += given_carbs;
+                real_time_stats.fats += given_fats;
+                sessionStorage.setItem(given_date, JSON.stringify(stats))
             }
 
             if (current_date === given_date) {
-                update_stats(stat_cache.get(current_date));
+                update_stats(JSON.parse(sessionStorage.getItem(current_date)));
             }
         }
 
@@ -212,10 +213,10 @@
                 datasets: [{
                     label: 'Calories',
                     data: [
-                        stat_cache.get(current_date).breakfast,
-                        stat_cache.get(current_date).lunch,
-                        stat_cache.get(current_date).dinner,
-                        stat_cache.get(current_date).snacks
+                        JSON.parse(sessionStorage.getItem(current_date)).breakfast,
+                        JSON.parse(sessionStorage.getItem(current_date)).lunch,
+                        JSON.parse(sessionStorage.getItem(current_date)).dinner,
+                        JSON.parse(sessionStorage.getItem(current_date)).snacks
                     ],
                     backgroundColor: [
                         'rgb(255, 99, 132)',
@@ -237,9 +238,9 @@
                 ],
                 datasets: [{
                     label: 'Macros',
-                    data: [stat_cache.get(current_date).protein,
-                        stat_cache.get(current_date).carbs,
-                        stat_cache.get(current_date).fats],
+                    data: [JSON.parse(sessionStorage.getItem(current_date)).protein,
+                        JSON.parse(sessionStorage.getItem(current_date)).carbs,
+                        JSON.parse(sessionStorage.getItem(current_date)).fats],
                     backgroundColor: [
                         'rgb(0, 255, 0)',
                         'rgb(54, 162, 235)',
@@ -265,8 +266,8 @@
                     let yyyy = date.getFullYear();
                     current_date = yyyy+"-"+mm+"-"+dd;
                     document.getElementById('current_date').innerHTML = current_date;
-                    if (stat_cache.has(current_date)){
-                        update_stats(stat_cache.get(current_date));
+                    if (sessionStorage.getItem(current_date) !== null){
+                        update_stats(JSON.parse(sessionStorage.getItem(current_date)));
                     } else {
                         let dateJSON = {
                             "date": current_date,
@@ -277,7 +278,7 @@
                             body: JSON.stringify(dateJSON),
                         })
                             .then(response => response.json())
-                            .then(data => stat_cache.set(current_date, {
+                            .then(data => sessionStorage.setItem(current_date, JSON.stringify({
                                 breakfast: ParseFloatPrecise(data.breakfast),
                                 lunch: ParseFloatPrecise(data.lunch),
                                 dinner: ParseFloatPrecise(data.dinner),
@@ -285,9 +286,10 @@
                                 protein: ParseFloatPrecise(data.protein),
                                 carbs: ParseFloatPrecise(data.carbs),
                                 fats: ParseFloatPrecise(data.fats),
-                            }));
-                        console.log(stat_cache.get(current_date));
-                        update_stats(stat_cache.get(current_date));
+                            })));
+                        let data = JSON.parse(sessionStorage.getItem(current_date));
+                        console.log(data);
+                        update_stats(data);
                     }
 
                     notie.alert({ type: 1, text: 'You selected: ' + current_date });
