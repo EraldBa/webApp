@@ -82,10 +82,12 @@
     <script>
 
         {{with $success:=.Success}}
+            localStorage.clear();
             attention.success({title: {{$success}}});
         {{end}}
 
         {{with $flash:=.Flash}}
+            localStorage.clear();
             attention.toast({icon: "success", msg : {{$flash}}})
         {{end}}
 

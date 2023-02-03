@@ -59,7 +59,7 @@
 
 
 
-            sessionStorage.setItem(current_date, JSON.stringify({
+            localStorage.setItem(current_date, JSON.stringify({
                 {{with .Stats}}
                     breakfast: ParseFloatPrecise({{.Breakfast}}),
                     lunch: ParseFloatPrecise({{.Lunch}}),
@@ -71,7 +71,7 @@
                 {{end}}
             }));
 
-        let stats = JSON.parse(sessionStorage.getItem(current_date))
+        let stats = JSON.parse(localStorage.getItem(current_date))
         let total_cal = stats.breakfast +
                         stats.lunch +
                         stats.dinner +
@@ -112,17 +112,17 @@
             let given_fats = ParseFloatPrecise(result[5]);
             let given_date = result[0];
 
-            if (sessionStorage.getItem(given_date) !== null){
-                let real_time_stats = JSON.parse(sessionStorage.getItem(given_date));
+            if (localStorage.getItem(given_date) !== null){
+                let real_time_stats = JSON.parse(localStorage.getItem(given_date));
                 real_time_stats[result[1]] += given_cals;
                 real_time_stats.protein += given_protein;
                 real_time_stats.carbs += given_carbs;
                 real_time_stats.fats += given_fats;
-                sessionStorage.setItem(given_date, JSON.stringify(stats))
+                localStorage.setItem(given_date, JSON.stringify(stats))
             }
 
             if (current_date === given_date) {
-                update_stats(JSON.parse(sessionStorage.getItem(current_date)));
+                update_stats(JSON.parse(localStorage.getItem(current_date)));
             }
         }
 
@@ -213,10 +213,10 @@
                 datasets: [{
                     label: 'Calories',
                     data: [
-                        JSON.parse(sessionStorage.getItem(current_date)).breakfast,
-                        JSON.parse(sessionStorage.getItem(current_date)).lunch,
-                        JSON.parse(sessionStorage.getItem(current_date)).dinner,
-                        JSON.parse(sessionStorage.getItem(current_date)).snacks
+                        JSON.parse(localStorage.getItem(current_date)).breakfast,
+                        JSON.parse(localStorage.getItem(current_date)).lunch,
+                        JSON.parse(localStorage.getItem(current_date)).dinner,
+                        JSON.parse(localStorage.getItem(current_date)).snacks
                     ],
                     backgroundColor: [
                         'rgb(255, 99, 132)',
@@ -238,9 +238,9 @@
                 ],
                 datasets: [{
                     label: 'Macros',
-                    data: [JSON.parse(sessionStorage.getItem(current_date)).protein,
-                        JSON.parse(sessionStorage.getItem(current_date)).carbs,
-                        JSON.parse(sessionStorage.getItem(current_date)).fats],
+                    data: [JSON.parse(localStorage.getItem(current_date)).protein,
+                        JSON.parse(localStorage.getItem(current_date)).carbs,
+                        JSON.parse(localStorage.getItem(current_date)).fats],
                     backgroundColor: [
                         'rgb(0, 255, 0)',
                         'rgb(54, 162, 235)',
@@ -266,8 +266,8 @@
                     let yyyy = date.getFullYear();
                     current_date = yyyy+"-"+mm+"-"+dd;
                     document.getElementById('current_date').innerHTML = current_date;
-                    if (sessionStorage.getItem(current_date) !== null){
-                        update_stats(JSON.parse(sessionStorage.getItem(current_date)));
+                    if (localStorage.getItem(current_date) !== null){
+                        update_stats(JSON.parse(localStorage.getItem(current_date)));
                     } else {
                         let dateJSON = {
                             "date": current_date,
@@ -278,7 +278,7 @@
                             body: JSON.stringify(dateJSON),
                         })
                             .then(response => response.json())
-                            .then(data => sessionStorage.setItem(current_date, JSON.stringify({
+                            .then(data => localStorage.setItem(current_date, JSON.stringify({
                                 breakfast: ParseFloatPrecise(data.breakfast),
                                 lunch: ParseFloatPrecise(data.lunch),
                                 dinner: ParseFloatPrecise(data.dinner),
@@ -287,7 +287,7 @@
                                 carbs: ParseFloatPrecise(data.carbs),
                                 fats: ParseFloatPrecise(data.fats),
                             })));
-                        let data = JSON.parse(sessionStorage.getItem(current_date));
+                        let data = JSON.parse(localStorage.getItem(current_date));
                         console.log(data);
                         update_stats(data);
                     }
