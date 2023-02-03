@@ -118,7 +118,7 @@
                 real_time_stats.protein += given_protein;
                 real_time_stats.carbs += given_carbs;
                 real_time_stats.fats += given_fats;
-                localStorage.setItem(given_date, JSON.stringify(stats))
+                localStorage.setItem(given_date, JSON.stringify(real_time_stats))
             }
 
             if (current_date === given_date) {
